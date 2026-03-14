@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { IsOptional } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -29,22 +28,29 @@ export class User {
     description: "Adresse email unique de l'utilisateur",
     example: 'manager@bizina.com',
   })
-  @IsOptional()
-  @Column({ unique: true, nullable: true })
-  email: string;
+  // @Column({ type: 'varchar', length: 254, unique: true, nullable: true })
+  // email?: string | null;
+  @Column({
+    type: 'varchar',
+    length: 254,
+    nullable: true,
+    default: () => 'NULL',
+    unique: true,
+  })
+  email: string | null;
 
   @ApiProperty({
     description: "Nom d'utilisateur unique de l'utilisateur",
     example: 'manager_bizina',
   })
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 50, unique: true, nullable: false })
   username: string;
 
   @ApiProperty({
     description: 'Mot de passe utilisateur (idéalement hashé)',
     example: '$2b$10$uD4hIhQqfM3Jk8XvM8o5mO9o6V9Z7z2Xo8L6v6u1y7nD5r3w2p1yK',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: false })
   @Exclude()
   password: string;
 
@@ -53,18 +59,42 @@ export class User {
     enum: UserRole,
     example: UserRole.CASHIER,
   })
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.CASHIER })
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.CASHIER,
+    nullable: false,
+  })
   role: UserRole;
 
   @ApiProperty({
     description: "Statut actif de l'utilisateur",
     example: true,
   })
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: true, nullable: false })
   isActive: boolean;
 
   @ApiProperty({
-    description: 'Date de creation',
+    description: 'Date de dernière connexion',
+    type: String,
+    format: 'date-time',
+    example: '2026-03-12T10:00:00.000Z',
+  })
+  // @Column({
+  //   type: 'timestamp',
+  //   nullable: true,
+  //   default: null,
+  // })
+  // lastLogin: Date | null;
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+    default: () => 'NULL',
+  })
+  lastLogin: Date | null;
+
+  @ApiProperty({
+    description: 'Date de création de l’utilisateur',
     type: String,
     format: 'date-time',
     example: '2026-03-12T10:00:00.000Z',
@@ -74,7 +104,7 @@ export class User {
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Date de derniere mise a jour',
+    description: 'Date de dernière mise à jour',
     type: String,
     format: 'date-time',
     example: '2026-03-12T11:15:00.000Z',
