@@ -7,6 +7,7 @@ import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { UnitsModule } from './modules/units/units.module';
 import { UsersModule } from './modules/users/users.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     AuthModule,
     UnitsModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
