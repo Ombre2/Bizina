@@ -62,7 +62,9 @@ export class ProductsService {
       where: { id },
       relations: {
         baseUnit: true,
-        productUnits: true,
+        productUnits: {
+          unit: true,
+        },
       },
     });
 

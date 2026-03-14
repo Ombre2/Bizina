@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Supplier } from '../suppliers/entities/supplier.entity';
+import { PurchaseItemService } from '../purchase-item/purchase-item.service';
+import { SuppliersService } from '../suppliers/suppliers.service';
 import { Purchase } from './entities/purchase.entity';
 import { PurchaseService } from './purchase.service';
 
@@ -14,8 +15,11 @@ describe('PurchaseService', () => {
     save: jest.fn(),
     delete: jest.fn(),
   };
-  const mockSuppliersRepository = {
-    findOneBy: jest.fn(),
+  const mockSuppliersService = {
+    findOne: jest.fn(),
+  };
+  const mockPurchaseItemService = {
+    createMany: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -27,8 +31,12 @@ describe('PurchaseService', () => {
           useValue: mockPurchasesRepository,
         },
         {
-          provide: getRepositoryToken(Supplier),
-          useValue: mockSuppliersRepository,
+          provide: SuppliersService,
+          useValue: mockSuppliersService,
+        },
+        {
+          provide: PurchaseItemService,
+          useValue: mockPurchaseItemService,
         },
       ],
     }).compile();

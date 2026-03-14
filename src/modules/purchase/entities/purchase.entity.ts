@@ -1,3 +1,4 @@
+import type { PurchaseItem } from 'src/modules/purchase-item/entities/purchase-item.entity';
 import { Supplier } from 'src/modules/suppliers/entities/supplier.entity';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -16,6 +18,9 @@ export class Purchase {
   @ManyToOne(() => Supplier, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'supplier_id' })
   supplier: Supplier;
+
+  @OneToMany('PurchaseItem', 'purchase')
+  purchaseItems: PurchaseItem[];
 
   @Column({ name: 'purchase_date', type: 'timestamp', nullable: false })
   purchaseDate: Date;

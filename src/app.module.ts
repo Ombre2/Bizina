@@ -11,6 +11,8 @@ import { ProductUnit } from './modules/product-units/entities/product-unit.entit
 import { ProductUnitsModule } from './modules/product-units/product-units.module';
 import { Product } from './modules/products/entities/product.entity';
 import { ProductsModule } from './modules/products/products.module';
+import { PurchaseItem } from './modules/purchase-item/entities/purchase-item.entity';
+import { PurchaseItemModule } from './modules/purchase-item/purchase-item.module';
 import { Purchase } from './modules/purchase/entities/purchase.entity';
 import { PurchaseModule } from './modules/purchase/purchase.module';
 import { Supplier } from './modules/suppliers/entities/supplier.entity';
@@ -44,6 +46,7 @@ import { UsersModule } from './modules/users/users.module';
           Supplier,
           Customer,
           Purchase,
+          PurchaseItem,
         ],
         synchronize:
           configService.get<boolean>('database.synchronize') ?? false,
@@ -60,6 +63,7 @@ import { UsersModule } from './modules/users/users.module';
     SuppliersModule,
     CustomersModule,
     PurchaseModule,
+    PurchaseItemModule,
   ],
   controllers: [AppController],
   providers: [AppService],
