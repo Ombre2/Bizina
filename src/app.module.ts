@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
+import { CustomersModule } from './modules/customers/customers.module';
+import { Customer } from './modules/customers/entities/customer.entity';
 import { ProductUnit } from './modules/product-units/entities/product-unit.entity';
 import { ProductUnitsModule } from './modules/product-units/product-units.module';
 import { Product } from './modules/products/entities/product.entity';
@@ -32,7 +34,7 @@ import { UsersModule } from './modules/users/users.module';
         username: configService.get<string>('database.username') ?? 'root',
         password: configService.get<string>('database.password') ?? '',
         database: configService.get<string>('database.database') ?? 'bizina',
-        entities: [User, Unit, Product, ProductUnit, Supplier],
+        entities: [User, Unit, Product, ProductUnit, Supplier, Customer],
         synchronize:
           configService.get<boolean>('database.synchronize') ?? false,
         logging: configService.get<boolean>('database.logging') ?? false,
@@ -46,6 +48,7 @@ import { UsersModule } from './modules/users/users.module';
     ProductsModule,
     ProductUnitsModule,
     SuppliersModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
