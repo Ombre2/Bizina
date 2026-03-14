@@ -5,10 +5,16 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
-import { UnitsModule } from './modules/units/units.module';
-import { UsersModule } from './modules/users/users.module';
-import { ProductsModule } from './modules/products/products.module';
+import { ProductUnit } from './modules/product-units/entities/product-unit.entity';
 import { ProductUnitsModule } from './modules/product-units/product-units.module';
+import { Product } from './modules/products/entities/product.entity';
+import { ProductsModule } from './modules/products/products.module';
+import { Supplier } from './modules/suppliers/entities/supplier.entity';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { Unit } from './modules/units/entities/unit.entity';
+import { UnitsModule } from './modules/units/units.module';
+import { User } from './modules/users/entities/user.entity';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -26,7 +32,7 @@ import { ProductUnitsModule } from './modules/product-units/product-units.module
         username: configService.get<string>('database.username') ?? 'root',
         password: configService.get<string>('database.password') ?? '',
         database: configService.get<string>('database.database') ?? 'bizina',
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        entities: [User, Unit, Product, ProductUnit, Supplier],
         synchronize:
           configService.get<boolean>('database.synchronize') ?? false,
         logging: configService.get<boolean>('database.logging') ?? false,
@@ -39,6 +45,7 @@ import { ProductUnitsModule } from './modules/product-units/product-units.module
     UnitsModule,
     ProductsModule,
     ProductUnitsModule,
+    SuppliersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

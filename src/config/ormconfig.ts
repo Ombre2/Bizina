@@ -1,4 +1,9 @@
 import * as dotenv from 'dotenv';
+import { ProductUnit } from 'src/modules/product-units/entities/product-unit.entity';
+import { Product } from 'src/modules/products/entities/product.entity';
+import { Supplier } from 'src/modules/suppliers/entities/supplier.entity';
+import { Unit } from 'src/modules/units/entities/unit.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 dotenv.config();
 
 import { DataSource } from 'typeorm';
@@ -11,7 +16,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DATABASE_PASS ?? '',
   database: process.env.DATABASE_NAME ?? 'bizina',
 
-  entities: ['dist/**/*.entity{.ts,.js}'],
+  entities: [User, Unit, Product, ProductUnit, Supplier],
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: false,
   logging: process.env.NODE_ENV !== 'production',
