@@ -11,6 +11,8 @@ import { ProductUnit } from './modules/product-units/entities/product-unit.entit
 import { ProductUnitsModule } from './modules/product-units/product-units.module';
 import { Product } from './modules/products/entities/product.entity';
 import { ProductsModule } from './modules/products/products.module';
+import { Purchase } from './modules/purchase/entities/purchase.entity';
+import { PurchaseModule } from './modules/purchase/purchase.module';
 import { Supplier } from './modules/suppliers/entities/supplier.entity';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { Unit } from './modules/units/entities/unit.entity';
@@ -34,7 +36,15 @@ import { UsersModule } from './modules/users/users.module';
         username: configService.get<string>('database.username') ?? 'root',
         password: configService.get<string>('database.password') ?? '',
         database: configService.get<string>('database.database') ?? 'bizina',
-        entities: [User, Unit, Product, ProductUnit, Supplier, Customer],
+        entities: [
+          User,
+          Unit,
+          Product,
+          ProductUnit,
+          Supplier,
+          Customer,
+          Purchase,
+        ],
         synchronize:
           configService.get<boolean>('database.synchronize') ?? false,
         logging: configService.get<boolean>('database.logging') ?? false,
@@ -49,6 +59,7 @@ import { UsersModule } from './modules/users/users.module';
     ProductUnitsModule,
     SuppliersModule,
     CustomersModule,
+    PurchaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

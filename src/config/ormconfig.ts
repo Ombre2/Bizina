@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import { Customer } from 'src/modules/customers/entities/customer.entity';
 import { ProductUnit } from 'src/modules/product-units/entities/product-unit.entity';
 import { Product } from 'src/modules/products/entities/product.entity';
+import { Purchase } from 'src/modules/purchase/entities/purchase.entity';
 import { Supplier } from 'src/modules/suppliers/entities/supplier.entity';
 import { Unit } from 'src/modules/units/entities/unit.entity';
 import { User } from 'src/modules/users/entities/user.entity';
@@ -17,7 +18,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DATABASE_PASS ?? '',
   database: process.env.DATABASE_NAME ?? 'bizina',
 
-  entities: [User, Unit, Product, ProductUnit, Supplier, Customer],
+  entities: [User, Unit, Product, ProductUnit, Supplier, Customer, Purchase],
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: false,
   logging: process.env.NODE_ENV !== 'production',
