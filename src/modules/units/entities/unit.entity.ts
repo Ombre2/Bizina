@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import type { ProductUnit } from 'src/modules/product-units/entities/product-unit.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('units')
 export class Unit {
@@ -10,4 +11,7 @@ export class Unit {
 
   @Column({ type: 'varchar', length: 20, nullable: false, unique: true })
   symbol: string;
+
+  @OneToMany('ProductUnit', 'unit')
+  productUnits: ProductUnit[];
 }

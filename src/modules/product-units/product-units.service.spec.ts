@@ -1,26 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ProductUnitsService } from '../product-units/product-units.service';
+import { Product } from '../products/entities/product.entity';
 import { UnitsService } from '../units/units.service';
-import { Product } from './entities/product.entity';
-import { ProductsService } from './products.service';
+import { ProductUnit } from './entities/product-unit.entity';
+import { ProductUnitsService } from './product-units.service';
 
-describe('ProductsService', () => {
-  let service: ProductsService;
+describe('ProductUnitsService', () => {
+  let service: ProductUnitsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ProductsService,
+        ProductUnitsService,
         {
-          provide: getRepositoryToken(Product),
+          provide: getRepositoryToken(ProductUnit),
           useValue: {
             create: jest.fn(),
             save: jest.fn(),
             find: jest.fn(),
             findOne: jest.fn(),
-            findOneBy: jest.fn(),
             delete: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(Product),
+          useValue: {
+            findOneBy: jest.fn(),
           },
         },
         {
@@ -29,16 +34,10 @@ describe('ProductsService', () => {
             findOne: jest.fn(),
           },
         },
-        {
-          provide: ProductUnitsService,
-          useValue: {
-            createMany: jest.fn(),
-          },
-        },
       ],
     }).compile();
 
-    service = module.get<ProductsService>(ProductsService);
+    service = module.get<ProductUnitsService>(ProductUnitsService);
   });
 
   it('should be defined', () => {

@@ -1,3 +1,4 @@
+import { ProductUnit } from 'src/modules/product-units/entities/product-unit.entity';
 import { Unit } from 'src/modules/units/entities/unit.entity';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -22,6 +24,9 @@ export class Product {
   @ManyToOne(() => Unit, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'base_unit_id' })
   baseUnit: Unit;
+
+  @OneToMany(() => ProductUnit, (productUnit) => productUnit.product)
+  productUnits: ProductUnit[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;

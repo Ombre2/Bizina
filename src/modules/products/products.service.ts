@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ProductUnitsService } from '../product-units/product-units.service';
 import { UnitsService } from '../units/units.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -12,6 +13,7 @@ export class ProductsService {
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
     private readonly unitsService: UnitsService,
+    private readonly productUnitsService: ProductUnitsService,
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -25,7 +27,23 @@ export class ProductsService {
       baseUnit,
     });
 
-    return this.productsRepository.save(product);
+    const savedProduct = await this.productsRepository.save(product);
+    const hasBaseUnitInPayload = createProductDto.productUnit.some(
+      (item) => item.unitId === savedProduct.baseUnit.id,
+    );
+    const relatedUnits = hasBaseUnitInPayload
+      ? createProductDto.productUnit
+      : [
+          ...createProductDto.productUnit,
+          {
+            unitId: savedProduct.baseUnit.id,
+            conversionToBase: '1',
+          },
+        ];
+
+    await this.productUnitsService.createMany(savedProduct.id, relatedUnits);
+
+    return this.findOne(savedProduct.id);
   }
 
   findAll(): Promise<Product[]> {
@@ -44,6 +62,7 @@ export class ProductsService {
       where: { id },
       relations: {
         baseUnit: true,
+        productUnits: true,
       },
     });
 
@@ -53,7 +72,7 @@ export class ProductsService {
       );
     }
 
-    return product;
+    return { ...product };
   }
 
   async update(
