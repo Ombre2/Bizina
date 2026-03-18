@@ -7,6 +7,8 @@ import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { Customer } from './modules/customers/entities/customer.entity';
+import { PaymentMethod } from './modules/payment-methods/entities/payment-method.entity';
+import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.module';
 import { ProductUnit } from './modules/product-units/entities/product-unit.entity';
 import { ProductUnitsModule } from './modules/product-units/product-units.module';
 import { Product } from './modules/products/entities/product.entity';
@@ -53,6 +55,7 @@ import { UsersModule } from './modules/users/users.module';
           PurchaseItem,
           Sale,
           SaleItem,
+          PaymentMethod,
         ],
         synchronize:
           configService.get<boolean>('database.synchronize') ?? false,
@@ -72,6 +75,7 @@ import { UsersModule } from './modules/users/users.module';
     PurchaseItemModule,
     SalesModule,
     SaleItemsModule,
+    PaymentMethodsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

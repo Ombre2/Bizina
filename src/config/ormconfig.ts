@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import { Customer } from 'src/modules/customers/entities/customer.entity';
+import { PaymentMethod } from 'src/modules/payment-methods/entities/payment-method.entity';
 import { ProductUnit } from 'src/modules/product-units/entities/product-unit.entity';
 import { Product } from 'src/modules/products/entities/product.entity';
 import { PurchaseItem } from 'src/modules/purchase-item/entities/purchase-item.entity';
@@ -32,6 +33,7 @@ export const AppDataSource = new DataSource({
     PurchaseItem,
     Sale,
     SaleItem,
+    PaymentMethod,
   ],
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: false,
