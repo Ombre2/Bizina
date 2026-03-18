@@ -19,6 +19,8 @@ import { Purchase } from './modules/purchase/entities/purchase.entity';
 import { PurchaseModule } from './modules/purchase/purchase.module';
 import { SaleItem } from './modules/sale-items/entities/sale-item.entity';
 import { SaleItemsModule } from './modules/sale-items/sale-items.module';
+import { SalePayment } from './modules/sale-payments/entities/sale-payment.entity';
+import { SalePaymentsModule } from './modules/sale-payments/sale-payments.module';
 import { Sale } from './modules/sales/entities/sale.entity';
 import { SalesModule } from './modules/sales/sales.module';
 import { Supplier } from './modules/suppliers/entities/supplier.entity';
@@ -56,6 +58,7 @@ import { UsersModule } from './modules/users/users.module';
           Sale,
           SaleItem,
           PaymentMethod,
+          SalePayment,
         ],
         synchronize:
           configService.get<boolean>('database.synchronize') ?? false,
@@ -76,6 +79,7 @@ import { UsersModule } from './modules/users/users.module';
     SalesModule,
     SaleItemsModule,
     PaymentMethodsModule,
+    SalePaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

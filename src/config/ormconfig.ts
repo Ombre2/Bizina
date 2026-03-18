@@ -6,6 +6,7 @@ import { Product } from 'src/modules/products/entities/product.entity';
 import { PurchaseItem } from 'src/modules/purchase-item/entities/purchase-item.entity';
 import { Purchase } from 'src/modules/purchase/entities/purchase.entity';
 import { SaleItem } from 'src/modules/sale-items/entities/sale-item.entity';
+import { SalePayment } from 'src/modules/sale-payments/entities/sale-payment.entity';
 import { Sale } from 'src/modules/sales/entities/sale.entity';
 import { Supplier } from 'src/modules/suppliers/entities/supplier.entity';
 import { Unit } from 'src/modules/units/entities/unit.entity';
@@ -34,6 +35,7 @@ export const AppDataSource = new DataSource({
     Sale,
     SaleItem,
     PaymentMethod,
+    SalePayment,
   ],
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: false,
