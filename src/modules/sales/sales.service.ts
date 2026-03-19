@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CustomersService } from '../customers/customers.service';
 import { CreateSaleItemDto } from '../sale-items/dto/create-sale-item.dto';
 import { SaleItemsService } from '../sale-items/sale-items.service';
+import { StockMovementsService } from '../stock-movements/stock-movements.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { Sale } from './entities/sale.entity';
@@ -15,6 +16,7 @@ export class SalesService {
     private readonly salesRepository: Repository<Sale>,
     private readonly customersService: CustomersService,
     private readonly saleItemsService: SaleItemsService,
+    private readonly stockMovementsService: StockMovementsService,
   ) {}
 
   async create(createSaleDto: CreateSaleDto): Promise<Sale> {
@@ -46,6 +48,8 @@ export class SalesService {
       .reduce((sum, item) => sum + Number(item.totalPrice), 0)
       .toFixed(2);
     await this.salesRepository.save(savedSale);
+
+    await this.stockMovementsService.createForSale(savedSale, createdItems);
 
     return this.findOne(savedSale.id);
   }

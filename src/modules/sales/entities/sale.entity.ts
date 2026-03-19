@@ -1,5 +1,5 @@
 import { Customer } from 'src/modules/customers/entities/customer.entity';
-import { SaleItem } from 'src/modules/sale-items/entities/sale-item.entity';
+import type { SaleItem } from 'src/modules/sale-items/entities/sale-item.entity';
 import {
   Column,
   CreateDateColumn,
@@ -28,7 +28,7 @@ export class Sale {
   @JoinColumn({ name: 'customer_id' })
   customer: Customer | null;
 
-  @OneToMany(() => SaleItem, (saleItem) => saleItem.sale, { cascade: true })
+  @OneToMany('SaleItem', 'sale', { cascade: true })
   saleItems: SaleItem[];
 
   @Column({ name: 'sale_date', type: 'timestamp', nullable: false })

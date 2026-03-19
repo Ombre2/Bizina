@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePurchaseItemDto } from '../purchase-item/dto/create-purchase-item.dto';
 import { PurchaseItemService } from '../purchase-item/purchase-item.service';
+import { StockMovementsService } from '../stock-movements/stock-movements.service';
 import { SuppliersService } from '../suppliers/suppliers.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { UpdatePurchaseDto } from './dto/update-purchase.dto';
@@ -14,7 +20,10 @@ export class PurchaseService {
     @InjectRepository(Purchase)
     private readonly purchasesRepository: Repository<Purchase>,
     private readonly purchaseItemService: PurchaseItemService,
+    @Inject(forwardRef(() => SuppliersService))
     private readonly suppliersService: SuppliersService,
+    @Inject(forwardRef(() => StockMovementsService))
+    private readonly stockMovementsService: StockMovementsService,
   ) {}
 
   async create(createPurchaseDto: CreatePurchaseDto): Promise<Purchase> {
@@ -44,6 +53,11 @@ export class PurchaseService {
       .reduce((sum, item) => sum + Number(item.totalPrice), 0)
       .toFixed(2);
     await this.purchasesRepository.save(savedPurchase);
+
+    await this.stockMovementsService.createForPurchase(
+      savedPurchase,
+      createdItems,
+    );
 
     return this.findOne(savedPurchase.id);
   }

@@ -13,7 +13,10 @@ export class SaleItem {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Sale, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Sale, (sale) => sale.saleItems, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'sale_id' })
   sale: Sale;
 

@@ -1,4 +1,5 @@
 import { ProductUnit } from 'src/modules/product-units/entities/product-unit.entity';
+import { StockMovement } from 'src/modules/stock-movements/entities/stock-movement.entity';
 import { Unit } from 'src/modules/units/entities/unit.entity';
 import {
   Column,
@@ -27,6 +28,9 @@ export class Product {
 
   @OneToMany(() => ProductUnit, (productUnit) => productUnit.product)
   productUnits: ProductUnit[];
+
+  @OneToMany(() => StockMovement, (stockMovement) => stockMovement.product)
+  stockMovements: StockMovement[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;

@@ -65,6 +65,7 @@ export class ProductsService {
         productUnits: {
           unit: true,
         },
+        stockMovements: true,
       },
     });
 

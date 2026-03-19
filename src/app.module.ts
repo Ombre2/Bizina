@@ -23,6 +23,8 @@ import { SalePayment } from './modules/sale-payments/entities/sale-payment.entit
 import { SalePaymentsModule } from './modules/sale-payments/sale-payments.module';
 import { Sale } from './modules/sales/entities/sale.entity';
 import { SalesModule } from './modules/sales/sales.module';
+import { StockMovement } from './modules/stock-movements/entities/stock-movement.entity';
+import { StockMovementsModule } from './modules/stock-movements/stock-movements.module';
 import { Supplier } from './modules/suppliers/entities/supplier.entity';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { Unit } from './modules/units/entities/unit.entity';
@@ -59,6 +61,7 @@ import { UsersModule } from './modules/users/users.module';
           SaleItem,
           PaymentMethod,
           SalePayment,
+          StockMovement,
         ],
         synchronize:
           configService.get<boolean>('database.synchronize') ?? false,
@@ -80,6 +83,7 @@ import { UsersModule } from './modules/users/users.module';
     SaleItemsModule,
     PaymentMethodsModule,
     SalePaymentsModule,
+    StockMovementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

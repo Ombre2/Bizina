@@ -12,8 +12,10 @@ export class SaleItemsService {
   constructor(
     @InjectRepository(SaleItem)
     private readonly saleItemsRepository: Repository<SaleItem>,
+
     @InjectRepository(Sale)
     private readonly salesRepository: Repository<Sale>,
+
     private readonly productUnitsService: ProductUnitsService,
   ) {}
 
