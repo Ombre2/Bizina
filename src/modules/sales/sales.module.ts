@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomersModule } from '../customers/customers.module';
+import { ProductUnitsModule } from '../product-units/product-units.module';
 import { SaleItemsModule } from '../sale-items/sale-items.module';
 import { StockMovementsModule } from '../stock-movements/stock-movements.module';
 import { Sale } from './entities/sale.entity';
@@ -13,6 +14,7 @@ import { SalesService } from './sales.service';
     CustomersModule,
     SaleItemsModule,
     StockMovementsModule,
+    ProductUnitsModule,
   ],
   controllers: [SalesController],
   providers: [SalesService],

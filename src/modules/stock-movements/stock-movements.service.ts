@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -6,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ProductsService } from '../products/products.service';
+import { ProductUnitsService } from '../product-units/product-units.service';
 import type { PurchaseItem } from '../purchase-item/entities/purchase-item.entity';
 import type { Purchase } from '../purchase/entities/purchase.entity';
 import type { SaleItem } from '../sale-items/entities/sale-item.entity';
@@ -20,23 +21,28 @@ export class StockMovementsService {
     @InjectRepository(StockMovement)
     private readonly stockMovementsRepository: Repository<StockMovement>,
 
-    @Inject(forwardRef(() => ProductsService))
-    private readonly productsService: ProductsService,
+    @Inject(forwardRef(() => ProductUnitsService))
+    private readonly productUnitsService: ProductUnitsService,
   ) {}
 
   async create(
     createStockMovementDto: CreateStockMovementDto,
   ): Promise<StockMovement> {
-    const product = await this.productsService.findOne(
-      createStockMovementDto.productId,
+    const productUnit = await this.productUnitsService.findOne(
+      createStockMovementDto.productUnitId,
     );
 
+    const rawQty = Number(createStockMovementDto.quantity);
+    if (rawQty === 0) {
+      throw new BadRequestException('La quantité ne peut pas être égale à 0');
+    }
+
+    const quantityInBase = rawQty * Number(productUnit.conversionToBase);
+
     const stockMovement = this.stockMovementsRepository.create({
-      product,
-      quantity: createStockMovementDto.quantity,
-      movementType: createStockMovementDto.movementType,
-      saleId: createStockMovementDto.saleId,
-      purchaseId: createStockMovementDto.purchaseId,
+      product: productUnit.product,
+      quantity: quantityInBase.toFixed(3),
+      movementType: MovementType.ADJUSTMENT,
     });
 
     const saved = await this.stockMovementsRepository.save(stockMovement);
@@ -82,14 +88,17 @@ export class StockMovementsService {
   }
 
   async createForSale(sale: Sale, items: SaleItem[]): Promise<void> {
-    const movements = items.map((item) =>
-      this.stockMovementsRepository.create({
+    const movements = items.map((item) => {
+      const quantityInBase =
+        Number(item.quantity) * Number(item.productUnit.conversionToBase);
+
+      return this.stockMovementsRepository.create({
         product: item.productUnit.product,
-        quantity: (-Number(item.quantity)).toFixed(3),
+        quantity: (-quantityInBase).toFixed(3),
         movementType: MovementType.SALE,
         sale,
-      }),
-    );
+      });
+    });
 
     await this.stockMovementsRepository.save(movements);
   }
@@ -98,15 +107,33 @@ export class StockMovementsService {
     purchase: Purchase,
     items: PurchaseItem[],
   ): Promise<void> {
-    const movements = items.map((item) =>
-      this.stockMovementsRepository.create({
+    const movements = items.map((item) => {
+      const quantityInBase =
+        Number(item.quantity) * Number(item.productUnit.conversionToBase);
+
+      return this.stockMovementsRepository.create({
         product: item.productUnit.product,
-        quantity: item.quantity,
+        quantity: quantityInBase.toFixed(3),
         movementType: MovementType.PURCHASE,
         purchase,
-      }),
-    );
+      });
+    });
 
     await this.stockMovementsRepository.save(movements);
+  }
+
+  async getStockByProduct(
+    productId: string,
+  ): Promise<{ productId: string; quantity: string }> {
+    const result = await this.stockMovementsRepository
+      .createQueryBuilder('sm')
+      .select('COALESCE(SUM(sm.quantity), 0)', 'total')
+      .where('sm.product_id = :productId', { productId })
+      .getRawOne<{ total: string }>();
+
+    return {
+      productId,
+      quantity: Number(result?.total ?? 0).toFixed(3),
+    };
   }
 }

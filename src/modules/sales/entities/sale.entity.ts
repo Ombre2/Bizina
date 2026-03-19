@@ -1,5 +1,6 @@
 import { Customer } from 'src/modules/customers/entities/customer.entity';
 import type { SaleItem } from 'src/modules/sale-items/entities/sale-item.entity';
+import type { SalePayment } from 'src/modules/sale-payments/entities/sale-payment.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,6 +10,12 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+export enum PaymentStatus {
+  UNPAID = 'unpaid',
+  PARTIAL = 'partial',
+  PAID = 'paid',
+}
 
 @Entity('sales')
 export class Sale {
@@ -30,6 +37,9 @@ export class Sale {
 
   @OneToMany('SaleItem', 'sale', { cascade: true })
   saleItems: SaleItem[];
+
+  @OneToMany('SalePayment', 'sale')
+  salePayments: SalePayment[];
 
   @Column({ name: 'sale_date', type: 'timestamp', nullable: false })
   saleDate: Date;

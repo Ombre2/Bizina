@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaymentMethodsService } from '../payment-methods/payment-methods.service';
@@ -20,6 +24,21 @@ export class SalePaymentsService {
     createSalePaymentDto: CreateSalePaymentDto,
   ): Promise<SalePayment> {
     const sale = await this.salesService.findOne(createSalePaymentDto.saleId);
+
+    const remaining = Number(sale.remainingAmount);
+    const paymentAmount = Number(createSalePaymentDto.amount);
+
+    if (paymentAmount <= 0) {
+      throw new BadRequestException(
+        'Le montant du paiement doit être supérieur à 0',
+      );
+    }
+
+    if (paymentAmount > remaining) {
+      throw new BadRequestException(
+        `Le montant du paiement (${paymentAmount.toFixed(2)}) dépasse le montant restant dû (${remaining.toFixed(2)})`,
+      );
+    }
 
     const paymentMethod = await this.paymentMethodsService.findOne(
       createSalePaymentDto.paymentMethodId,
