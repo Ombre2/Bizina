@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductUnitsService } from '../product-units/product-units.service';
+import { StockMovement } from '../stock-movements/entities/stock-movement.entity';
 import { UnitsService } from '../units/units.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -12,6 +13,8 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
+    @InjectRepository(StockMovement)
+    private readonly stockMovementsRepository: Repository<StockMovement>,
     private readonly unitsService: UnitsService,
     private readonly productUnitsService: ProductUnitsService,
   ) {}
@@ -112,5 +115,23 @@ export class ProductsService {
         `Produit avec l'identifiant ${id} introuvable`,
       );
     }
+  }
+
+  async getStockLevel(
+    id: string,
+  ): Promise<{ productId: string; productName: string; quantity: string }> {
+    const product = await this.findOne(id);
+
+    const result = await this.stockMovementsRepository
+      .createQueryBuilder('sm')
+      .select('COALESCE(SUM(sm.quantity), 0)', 'total')
+      .where('sm.product_id = :productId', { productId: id })
+      .getRawOne<{ total: string }>();
+
+    return {
+      productId: product.id,
+      productName: product.name,
+      quantity: Number(result?.total ?? 0).toFixed(3),
+    };
   }
 }

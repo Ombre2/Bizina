@@ -88,6 +88,19 @@ export class ProductsController {
     return ResponseUtil.success(result, 'Produit récupéré avec succès');
   }
 
+  @Get(':id/stock')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Récupérer le niveau de stock d'un produit" })
+  @ApiParam({ name: 'id', description: 'Identifiant UUID du produit' })
+  @ApiOkResponse({ description: 'Niveau de stock récupéré avec succès' })
+  @ApiNotFoundResponse({ description: 'Produit introuvable' })
+  async getStockLevel(@Param('id') id: string) {
+    const result = await this.productsService.getStockLevel(id);
+
+    return ResponseUtil.success(result, 'Niveau de stock récupéré avec succès');
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
