@@ -103,7 +103,29 @@ export class ProductsService {
       product.description = updateProductDto.description;
     }
 
-    return this.productsRepository.save(product);
+    await this.productsRepository.save(product);
+
+    if (updateProductDto.productUnit) {
+      // On utilise la méthode createMany qui gère insert/update pour chaque unité
+      const currentUnits = await this.productUnitsService.createMany(
+        id,
+        updateProductDto.productUnit,
+      );
+
+      const payloadUnitIds = new Set(
+        updateProductDto.productUnit.map((u) => u.unitId),
+      );
+      const toDelete = currentUnits.filter(
+        (item) => !payloadUnitIds.has(item.unit.id),
+      );
+      if (toDelete.length > 0) {
+        for (const item of toDelete) {
+          await this.productUnitsService.remove(item.id);
+        }
+      }
+    }
+
+    return await this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {

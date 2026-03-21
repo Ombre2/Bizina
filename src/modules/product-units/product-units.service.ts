@@ -96,6 +96,7 @@ export class ProductUnitsService {
 
     // Update conversion for existing product units when provided in payload.
     const toUpdate = existing.filter((item) => itemByUnitId.has(item.unit.id));
+
     if (toUpdate.length > 0) {
       for (const item of toUpdate) {
         item.conversionToBase =
@@ -162,6 +163,24 @@ export class ProductUnitsService {
     }
 
     return productUnit;
+  }
+
+  async findByProductId(id: string): Promise<ProductUnit[]> {
+    const productUnits = await this.productUnitsRepository.find({
+      where: { product: { id } },
+      relations: {
+        product: true,
+        unit: true,
+      },
+    });
+
+    if (!productUnits || productUnits.length === 0) {
+      throw new NotFoundException(
+        `Association produit/unité pour le produit avec l'identifiant ${id} introuvable`,
+      );
+    }
+
+    return productUnits;
   }
 
   async update(
