@@ -1,10 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  PaginatedResult,
-  PaginationParams,
-} from 'src/types/pagination-params.type';
-import { ILike, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ProductUnitsService } from '../product-units/product-units.service';
 import { StockMovement } from '../stock-movements/entities/stock-movement.entity';
 import { UnitsService } from '../units/units.service';
@@ -53,31 +49,26 @@ export class ProductsService {
     return this.findOne(savedProduct.id);
   }
 
-  async findAll({
-    page,
-    limit,
-    searchQuery = '',
-  }: PaginationParams): Promise<PaginatedResult<Product>> {
-    // Sécurise les valeurs
-    page = Math.max(1, Number(page));
-    limit = Math.max(1, Number(limit));
-
-    const [data, total] = await this.productsRepository.findAndCount({
-      where: searchQuery
-        ? [
-            { name: ILike(`%${searchQuery}%`) },
-            { description: ILike(`%${searchQuery}%`) },
-          ]
-        : {},
-      relations: { baseUnit: true },
-      order: { name: 'ASC' },
-      skip: (page - 1) * limit,
-      take: limit,
+  async findAll(): Promise<Product[]> {
+    const products = await this.productsRepository.find({
+      relations: [
+        'baseUnit',
+        'productUnits',
+        'productUnits.unit',
+        'stockMovements',
+      ],
+      order: {
+        name: 'ASC',
+      },
     });
-
-    const hasNextPage = page < Math.ceil(total / limit);
-
-    return { data, total, hasNextPage, hasPreviousPage: page > 1 };
+    // Ajout du stock courant calculé à chaque produit
+    return products.map((product) => {
+      const stock = (product.stockMovements || []).reduce(
+        (acc, sm) => acc + Number(sm.quantity),
+        0,
+      );
+      return { ...product, stock: Number(stock).toFixed(3) };
+    });
   }
 
   async findOne(id: string) {

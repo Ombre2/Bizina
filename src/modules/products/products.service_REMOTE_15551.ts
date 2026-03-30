@@ -80,19 +80,17 @@ export class ProductsService {
     return { data, total, hasNextPage, hasPreviousPage: page > 1 };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Product> {
     const product = await this.productsRepository.findOne({
       where: { id },
       relations: {
         baseUnit: true,
-        // productUnits: {
-        //   unit: true,
-        // },
+        productUnits: {
+          unit: true,
+        },
         stockMovements: true,
       },
     });
-
-    const productUnits = await this.productUnitsService.findByProductId(id);
 
     if (!product) {
       throw new NotFoundException(
@@ -100,7 +98,7 @@ export class ProductsService {
       );
     }
 
-    return { ...product, productUnits };
+    return { ...product };
   }
 
   async update(

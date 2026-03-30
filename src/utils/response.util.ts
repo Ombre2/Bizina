@@ -1,4 +1,10 @@
-type PaginationMeta = { total: number; page: number; limit: number };
+type PaginationMeta = {
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
 
 type SuccessResponse<T> = {
   error: false;
