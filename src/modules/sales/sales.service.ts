@@ -35,6 +35,7 @@ export class SalesService {
       const productUnit = await this.productUnitsService.findOne(
         item.productUnitId,
       );
+
       const stock = await this.stockMovementsService.getStockByProduct(
         productUnit.product.id,
       );
@@ -55,6 +56,7 @@ export class SalesService {
       customer,
       saleDate: createSaleDto.saleDate,
       totalAmount: '0.00',
+      missionId: createSaleDto.missionId, // Associer la mission à la vente si fournie
     });
 
     const savedSale = await this.salesRepository.save(sale);
@@ -74,6 +76,7 @@ export class SalesService {
     savedSale.totalAmount = createdItems
       .reduce((sum, item) => sum + Number(item.totalPrice), 0)
       .toFixed(2);
+
     await this.salesRepository.save(savedSale);
 
     await this.stockMovementsService.createForSale(savedSale, createdItems);
@@ -115,7 +118,19 @@ export class SalesService {
       },
       order: { saleDate: 'DESC' },
     });
+    return sales.map((sale) => this.withPaymentStatus(sale));
+  }
 
+  async findByMission(missionId: string) {
+    const sales = await this.salesRepository.find({
+      where: { missionId },
+      relations: {
+        customer: true,
+        saleItems: { productUnit: { product: true, unit: true } },
+        salePayments: { paymentMethod: true },
+      },
+      order: { saleDate: 'DESC' },
+    });
     return sales.map((sale) => this.withPaymentStatus(sale));
   }
 

@@ -1,3 +1,4 @@
+import { Mission } from 'src/modules/mission/entities/mission.entity';
 import type { Product } from 'src/modules/products/entities/product.entity';
 import { Purchase } from 'src/modules/purchase/entities/purchase.entity';
 import { Sale } from 'src/modules/sales/entities/sale.entity';
@@ -69,6 +70,22 @@ export class StockMovement {
     default: () => 'NULL',
   })
   purchaseId: string | null;
+
+  @Column({
+    name: 'mission_id',
+    nullable: true,
+    type: 'varchar',
+    length: 36,
+    default: () => 'NULL',
+  })
+  missionId: string;
+
+  @ManyToOne(() => Mission, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'mission_id' })
+  mission: Mission;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;

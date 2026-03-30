@@ -35,15 +35,18 @@ export class PurchaseService {
       supplier,
       purchaseDate: createPurchaseDto.purchaseDate,
       totalAmount: '0.00',
+      missionId: createPurchaseDto.missionId, // Associer la mission à l'achat si fournie
     });
 
     const savedPurchase = await this.purchasesRepository.save(purchase);
+
     const purchaseItemsPayload: CreatePurchaseItemDto[] =
       createPurchaseDto.items.map((item) => ({
         purchaseId: savedPurchase.id,
         productUnitId: item.productUnitId,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
+        missionId: createPurchaseDto.missionId, // Associer la mission à l'achat si fournie
       }));
 
     const createdItems =
@@ -76,6 +79,22 @@ export class PurchaseService {
       order: {
         purchaseDate: 'DESC',
       },
+    });
+  }
+
+  async findByMission(missionId: string): Promise<Purchase[]> {
+    return this.purchasesRepository.find({
+      where: { missionId },
+      relations: {
+        supplier: true,
+        purchaseItems: {
+          productUnit: {
+            product: true,
+            unit: true,
+          },
+        },
+      },
+      order: { purchaseDate: 'DESC' },
     });
   }
 

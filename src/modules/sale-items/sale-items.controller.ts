@@ -110,4 +110,23 @@ export class SaleItemsController {
       HttpStatus.OK,
     );
   }
+
+  @Get('sale/:saleId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Lister les lignes de vente d'une vente" })
+  @ApiParam({
+    name: 'saleId',
+    description: 'Identifiant UUID de la vente',
+  })
+  @ApiOkResponse({
+    description: 'Liste des lignes de vente récupérée',
+    type: SaleItem,
+    isArray: true,
+  })
+  async findBySale(@Param('saleId') saleId: string) {
+    const result = await this.saleItemsService.findBySale(saleId);
+
+    return ResponseUtil.success(result, 'Liste des lignes de vente récupérée');
+  }
 }

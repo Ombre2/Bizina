@@ -50,6 +50,7 @@ export class PurchaseController {
         value: {
           supplierId: 'f63ee3fe-2d2b-480a-8f1d-34d56d2233c9',
           purchaseDate: '2026-03-14T10:30:00.000Z',
+          missionId: '9ba5f00f-8bf7-436f-8e02-bc460c04e668',
           items: [
             {
               productUnitId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
@@ -150,5 +151,23 @@ export class PurchaseController {
       undefined,
       HttpStatus.OK,
     );
+  }
+
+  @Get('mission/:missionId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lister les achats par mission' })
+  @ApiParam({
+    name: 'missionId',
+    description: 'Identifiant UUID de la mission',
+  })
+  @ApiOkResponse({
+    description: 'Liste des achats pour la mission',
+    type: Purchase,
+    isArray: true,
+  })
+  async findByMission(@Param('missionId') missionId: string) {
+    const result = await this.purchaseService.findByMission(missionId);
+    return ResponseUtil.success(result, 'Liste des achats pour la mission');
   }
 }

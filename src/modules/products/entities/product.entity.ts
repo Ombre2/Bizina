@@ -26,7 +26,7 @@ export class Product {
   @JoinColumn({ name: 'base_unit_id' })
   baseUnit: Unit;
 
-  @OneToMany(() => ProductUnit, (productUnit) => productUnit.product)
+  @OneToMany('ProductUnit', 'product')
   productUnits: ProductUnit[];
 
   @OneToMany(() => StockMovement, (stockMovement) => stockMovement.product)
