@@ -144,8 +144,6 @@ export class SalesController {
   })
   async findByMission(@Param('missionId') missionId: string) {
     const result = await this.salesService.findByMission(missionId);
-    console.log(result, '<<<<<<<<<');
-
     return ResponseUtil.success(result, 'Liste des ventes pour la mission');
   }
 }

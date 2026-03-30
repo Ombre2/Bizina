@@ -85,8 +85,6 @@ export class SalesService {
   }
 
   private withPaymentStatus(sale: Sale) {
-    console.log(sale);
-
     const total = Number(sale.totalAmount ?? 0);
     const paid = (sale.salePayments ?? []).reduce(
       (sum, p) => sum + Number(p.amount),
