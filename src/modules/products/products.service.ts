@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  PaginatedResult,
+  PaginationParams,
+} from 'src/types/pagination-params.type';
+import { ILike, Repository } from 'typeorm';
 import { ProductUnitsService } from '../product-units/product-units.service';
 import { StockMovement } from '../stock-movements/entities/stock-movement.entity';
 import { UnitsService } from '../units/units.service';
@@ -49,15 +53,31 @@ export class ProductsService {
     return this.findOne(savedProduct.id);
   }
 
-  findAll(): Promise<Product[]> {
-    return this.productsRepository.find({
-      relations: {
-        baseUnit: true,
-      },
-      order: {
-        name: 'ASC',
-      },
+  async findAll({
+    page,
+    limit,
+    searchQuery = '',
+  }: PaginationParams): Promise<PaginatedResult<Product>> {
+    // Sécurise les valeurs
+    page = Math.max(1, Number(page));
+    limit = Math.max(1, Number(limit));
+
+    const [data, total] = await this.productsRepository.findAndCount({
+      where: searchQuery
+        ? [
+            { name: ILike(`%${searchQuery}%`) },
+            { description: ILike(`%${searchQuery}%`) },
+          ]
+        : {},
+      relations: { baseUnit: true },
+      order: { name: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    const hasNextPage = page < Math.ceil(total / limit);
+
+    return { data, total, hasNextPage, hasPreviousPage: page > 1 };
   }
 
   async findOne(id: string): Promise<Product> {
