@@ -133,7 +133,9 @@ export class ProductUnitsService {
     const productUnit = await this.productUnitsRepository.findOne({
       where: { id },
       relations: {
-        product: true,
+        product: {
+          baseUnit: true,
+        },
         unit: true,
       },
     });

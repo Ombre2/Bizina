@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { SaleWithItemsResponseDto } from 'src/type/type';
 import { In, Repository } from 'typeorm';
 import { ProductUnit } from '../product-units/entities/product-unit.entity';
 import { ProductUnitsService } from '../product-units/product-units.service';
@@ -150,6 +151,37 @@ export class SaleItemsService {
     }
 
     return saleItem;
+  }
+
+  async findBySale(saleId: string): Promise<SaleWithItemsResponseDto> {
+    const sale = await this.salesRepository.findOne({
+      where: { id: saleId },
+      relations: {
+        customer: true,
+      },
+    });
+
+    if (!sale) {
+      throw new NotFoundException(
+        `Vente avec l'identifiant ${saleId} introuvable`,
+      );
+    }
+    const saleItems = await this.saleItemsRepository.find({
+      where: { sale: { id: sale.id } },
+      relations: {
+        productUnit: {
+          product: true,
+          unit: true,
+        },
+      },
+      order: {
+        id: 'DESC',
+      },
+    });
+    return {
+      sale: sale,
+      saleItems: saleItems,
+    };
   }
 
   async remove(id: string): Promise<void> {

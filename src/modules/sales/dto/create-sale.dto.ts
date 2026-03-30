@@ -1,13 +1,16 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
+  IsBoolean,
   IsDate,
   IsNotEmpty,
   IsNumberString,
+  IsObject,
   IsOptional,
   IsUUID,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
@@ -45,14 +48,44 @@ export class CreateSaleItemInputDto {
   unitPrice: string;
 }
 
+export class CreateSalePaymentsDto {
+  @ApiProperty({
+    description: 'Paiement immédiat',
+    example: true,
+    required: false,
+  })
+  @ValidateIf((o) => o !== undefined)
+  @IsBoolean()
+  immediatePayment: boolean;
+
+  @ApiProperty({
+    description: 'Méthode de paiement (UUID ou code)',
+    example: 'a8e011da-be49-412a-84e2-ef1c66622683',
+    required: false,
+  })
+  @ValidateIf((o) => o !== undefined)
+  @IsUUID('4')
+  paymentMethod: string;
+}
+
 export class CreateSaleDto {
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Identifiant UUID du client (optionnel)',
     example: 'f63ee3fe-2d2b-480a-8f1d-34d56d2233c9',
   })
   @IsOptional()
   @IsUUID('4', { message: 'Le client doit être un UUID valide' })
   customerId?: string;
+
+  @ApiProperty({
+    description: 'Identifiant UUID de la mission (optionnel)',
+    example: 'b7c8d9e0-1234-5678-9abc-def012345678',
+    required: false,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'La mission doit être un UUID valide' })
+  missionId?: string;
 
   @ApiProperty({
     description: 'Date de la vente',
@@ -79,4 +112,15 @@ export class CreateSaleDto {
   @ValidateNested({ each: true })
   @Type(() => CreateSaleItemInputDto)
   items: CreateSaleItemInputDto[];
+
+  @ApiProperty({
+    description: 'Informations de paiement (optionnel)',
+    type: () => CreateSalePaymentsDto,
+    required: false,
+  })
+  @IsObject({ message: 'Le payments doit être un objet' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateSalePaymentsDto)
+  payments?: CreateSalePaymentsDto;
 }

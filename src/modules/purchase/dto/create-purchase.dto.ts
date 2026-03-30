@@ -6,6 +6,7 @@ import {
   IsDate,
   IsNotEmpty,
   IsNumberString,
+  IsOptional,
   IsUUID,
   ValidateNested,
 } from 'class-validator';
@@ -45,6 +46,16 @@ export class CreatePurchaseItemInputDto {
 }
 
 export class CreatePurchaseDto {
+  @ApiProperty({
+    description: 'Identifiant UUID de la mission (optionnel)',
+    example: 'b7c8d9e0-1234-5678-9abc-def012345678',
+    required: false,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'La mission doit être un UUID valide' })
+  missionId?: string;
+
   @ApiProperty({
     description: 'Identifiant UUID du fournisseur',
     example: 'f63ee3fe-2d2b-480a-8f1d-34d56d2233c9',

@@ -116,6 +116,7 @@ export class StockMovementsService {
         quantity: quantityInBase.toFixed(3),
         movementType: MovementType.PURCHASE,
         purchase,
+        missionId: purchase.missionId,
       });
     });
 

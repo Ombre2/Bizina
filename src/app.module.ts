@@ -7,6 +7,12 @@ import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { Customer } from './modules/customers/entities/customer.entity';
+import { ExpenseCategory } from './modules/expense-category/entities/expense-category.entity';
+import { ExpenseCategoryModule } from './modules/expense-category/expense-category.module';
+import { Expense } from './modules/expenses/entities/expense.entity';
+import { ExpensesModule } from './modules/expenses/expenses.module';
+import { Mission } from './modules/mission/entities/mission.entity';
+import { MissionModule } from './modules/mission/mission.module';
 import { PaymentMethod } from './modules/payment-methods/entities/payment-method.entity';
 import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.module';
 import { ProductUnit } from './modules/product-units/entities/product-unit.entity';
@@ -62,6 +68,9 @@ import { UsersModule } from './modules/users/users.module';
           PaymentMethod,
           SalePayment,
           StockMovement,
+          Mission,
+          ExpenseCategory,
+          Expense,
         ],
         synchronize:
           configService.get<boolean>('database.synchronize') ?? false,
@@ -84,6 +93,9 @@ import { UsersModule } from './modules/users/users.module';
     PaymentMethodsModule,
     SalePaymentsModule,
     StockMovementsModule,
+    MissionModule,
+    ExpenseCategoryModule,
+    ExpensesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

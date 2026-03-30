@@ -1,3 +1,4 @@
+import { Mission } from 'src/modules/mission/entities/mission.entity';
 import type { PurchaseItem } from 'src/modules/purchase-item/entities/purchase-item.entity';
 import { Supplier } from 'src/modules/suppliers/entities/supplier.entity';
 import {
@@ -33,6 +34,22 @@ export class Purchase {
     nullable: false,
   })
   totalAmount: string;
+
+  @Column({
+    name: 'mission_id',
+    nullable: true,
+    type: 'varchar',
+    length: 36,
+    default: () => 'NULL',
+  })
+  missionId: string;
+
+  @ManyToOne(() => Mission, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'mission_id' })
+  mission: Mission;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;

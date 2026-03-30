@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PurchaseWithItemsResponseDto } from 'src/type/type';
 import { In, Repository } from 'typeorm';
 import { ProductUnit } from '../product-units/entities/product-unit.entity';
 import { ProductUnitsService } from '../product-units/product-units.service';
@@ -137,10 +138,20 @@ export class PurchaseItemService {
   }
 
   async findOne(id: string): Promise<PurchaseItem> {
-    const purchaseItem = await this.purchaseItemsRepository.findOne({
-      where: { id },
+    const purchase = await this.purchasesRepository.findOne({
+      where: { id: id },
       relations: {
-        purchase: true,
+        supplier: true,
+      },
+    });
+
+    if (!purchase) {
+      throw new NotFoundException(`Achat avec l'identifiant ${id} introuvable`);
+    }
+
+    const purchaseItem = await this.purchaseItemsRepository.findOne({
+      where: { purchase: { id: purchase.id } },
+      relations: {
         productUnit: {
           product: true,
           unit: true,
@@ -155,6 +166,40 @@ export class PurchaseItemService {
     }
 
     return purchaseItem;
+  }
+
+  async findByPurchase(id: string): Promise<PurchaseWithItemsResponseDto> {
+    const purchase = await this.purchasesRepository.findOne({
+      where: { id: id },
+      relations: {
+        supplier: true,
+      },
+    });
+
+    if (!purchase) {
+      throw new NotFoundException(`Achat avec l'identifiant ${id} introuvable`);
+    }
+
+    const purchaseItem = await this.purchaseItemsRepository.find({
+      where: { purchase: { id: purchase.id } },
+      relations: {
+        productUnit: {
+          product: true,
+          unit: true,
+        },
+      },
+    });
+
+    if (!purchaseItem) {
+      throw new NotFoundException(
+        `Ligne d'achat avec l'identifiant ${id} introuvable`,
+      );
+    }
+
+    return {
+      purchase,
+      purchaseItems: purchaseItem,
+    };
   }
 
   async remove(id: string): Promise<void> {

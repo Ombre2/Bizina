@@ -29,12 +29,16 @@ import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { Sale } from './entities/sale.entity';
 import { SalesService } from './sales.service';
+import { SalesUseCaseService } from './SalesUseCaseService';
 
 @ApiTags('Sales')
 @Controller('sales')
 @UseInterceptors(ClassSerializerInterceptor)
 export class SalesController {
-  constructor(private readonly salesService: SalesService) {}
+  constructor(
+    private readonly salesService: SalesService,
+    private readonly salesUseCaseService: SalesUseCaseService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -47,7 +51,8 @@ export class SalesController {
   })
   @ApiBadRequestResponse({ description: 'Données invalides' })
   async create(@Body() createSaleDto: CreateSaleDto) {
-    const result = await this.salesService.create(createSaleDto);
+    const result =
+      await this.salesUseCaseService.createSaleWithPayment(createSaleDto);
 
     return ResponseUtil.success(
       result,
@@ -122,5 +127,25 @@ export class SalesController {
       undefined,
       HttpStatus.OK,
     );
+  }
+
+  @Get('mission/:missionId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lister les ventes par mission' })
+  @ApiParam({
+    name: 'missionId',
+    description: 'Identifiant UUID de la mission',
+  })
+  @ApiOkResponse({
+    description: 'Liste des ventes pour la mission',
+    type: Sale,
+    isArray: true,
+  })
+  async findByMission(@Param('missionId') missionId: string) {
+    const result = await this.salesService.findByMission(missionId);
+    console.log(result, '<<<<<<<<<');
+
+    return ResponseUtil.success(result, 'Liste des ventes pour la mission');
   }
 }

@@ -104,4 +104,23 @@ export class PurchaseItemController {
       HttpStatus.OK,
     );
   }
+
+  @Get('/purchase/:purchaseId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Lister les lignes d'achat d'un achat" })
+  @ApiParam({
+    name: 'purchaseId',
+    description: "Identifiant UUID de l'achat",
+  })
+  @ApiOkResponse({
+    description: "Liste des lignes d'achat  récupérée",
+    type: PurchaseItem,
+    isArray: true,
+  })
+  async findByPurchase(@Param('purchaseId') purchaseId: string) {
+    const result = await this.purchaseItemService.findByPurchase(purchaseId);
+
+    return ResponseUtil.success(result, "Liste des lignes d'achat récupérée");
+  }
 }

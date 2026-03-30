@@ -49,28 +49,41 @@ export class ProductsService {
     return this.findOne(savedProduct.id);
   }
 
-  findAll(): Promise<Product[]> {
-    return this.productsRepository.find({
-      relations: {
-        baseUnit: true,
-      },
+  async findAll(): Promise<Product[]> {
+    const products = await this.productsRepository.find({
+      relations: [
+        'baseUnit',
+        'productUnits',
+        'productUnits.unit',
+        'stockMovements',
+      ],
       order: {
         name: 'ASC',
       },
     });
+    // Ajout du stock courant calculé à chaque produit
+    return products.map((product) => {
+      const stock = (product.stockMovements || []).reduce(
+        (acc, sm) => acc + Number(sm.quantity),
+        0,
+      );
+      return { ...product, stock: Number(stock).toFixed(3) };
+    });
   }
 
-  async findOne(id: string): Promise<Product> {
+  async findOne(id: string) {
     const product = await this.productsRepository.findOne({
       where: { id },
       relations: {
         baseUnit: true,
-        productUnits: {
-          unit: true,
-        },
+        // productUnits: {
+        //   unit: true,
+        // },
         stockMovements: true,
       },
     });
+
+    const productUnits = await this.productUnitsService.findByProductId(id);
 
     if (!product) {
       throw new NotFoundException(
@@ -78,7 +91,7 @@ export class ProductsService {
       );
     }
 
-    return { ...product };
+    return { ...product, productUnits };
   }
 
   async update(
