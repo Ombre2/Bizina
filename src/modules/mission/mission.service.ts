@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MissionWithTotals } from 'src/type/type';
-import { Repository } from 'typeorm';
+import { PaginatedResult } from 'src/types/pagination-params.type';
+import { MissionWithTotals } from 'src/types/type';
+import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { Expense } from '../expenses/entities/expense.entity';
 import { Purchase } from '../purchase/entities/purchase.entity';
 import { Sale } from '../sales/entities/sale.entity';
 import { UsersService } from '../users/users.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
+import { FindMissionsDto } from './dto/find-missions.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
 import { Mission } from './entities/mission.entity';
 
@@ -33,13 +35,33 @@ export class MissionService {
     return this.missionRepository.save(mission);
   }
 
-  findAll() {
-    return this.missionRepository.find({
+  async findAll(query: FindMissionsDto): Promise<PaginatedResult<Mission>> {
+    const { limit, page, assignedTo, endDate, searchQuery, startDate, status } =
+      query;
+
+    const where: FindOptionsWhere<Mission> = {
+      title: searchQuery ? ILike(`%${searchQuery}%`) : undefined,
+      assignedTo: assignedTo ? { username: assignedTo } : undefined,
+      status: status !== undefined ? status : undefined,
+      createdAt:
+        startDate && endDate
+          ? Between(new Date(startDate), new Date(endDate))
+          : undefined,
+    };
+
+    const [data, total] = await this.missionRepository.findAndCount({
+      where,
       relations: ['assignedTo'],
       order: {
         createdAt: 'DESC',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    const hasNextPage = page < Math.ceil(total / limit);
+
+    return { data, total, hasNextPage, hasPreviousPage: page > 1 };
   }
 
   async findOne(id: string): Promise<MissionWithTotals> {

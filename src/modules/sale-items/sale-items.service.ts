@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SaleWithItemsResponseDto } from 'src/type/type';
+import { SaleWithItemsResponseDto } from 'src/types/type';
 import { In, Repository } from 'typeorm';
 import { ProductUnit } from '../product-units/entities/product-unit.entity';
 import { ProductUnitsService } from '../product-units/product-units.service';

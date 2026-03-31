@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -26,6 +27,7 @@ import {
 import { JwtAuthGuard } from 'src/config/jwt-auth.guard';
 import { ResponseUtil } from 'src/utils/response.util';
 import { CreateMissionDto } from './dto/create-mission.dto';
+import { FindMissionsDto } from './dto/find-missions.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
 import { Mission } from './entities/mission.entity';
 import { MissionService } from './mission.service';
@@ -65,9 +67,17 @@ export class MissionController {
     type: Mission,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.missionService.findAll();
-    return ResponseUtil.success(result, 'Liste des missions récupérée');
+  async findAll(@Query() query: FindMissionsDto) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.missionService.findAll(query);
+
+    return ResponseUtil.success(data, 'Liste des missions récupérée', {
+      total,
+      page: query.page,
+      limit: query.limit,
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')
