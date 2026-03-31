@@ -5,7 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  PaginatedResult,
+  PaginationParams,
+} from 'src/types/pagination-params.type';
+import { ILike, Repository } from 'typeorm';
 import { CreatePurchaseItemDto } from '../purchase-item/dto/create-purchase-item.dto';
 import { PurchaseItemService } from '../purchase-item/purchase-item.service';
 import { StockMovementsService } from '../stock-movements/stock-movements.service';
@@ -65,21 +69,45 @@ export class PurchaseService {
     return this.findOne(savedPurchase.id);
   }
 
-  findAll(): Promise<Purchase[]> {
-    return this.purchasesRepository.find({
-      relations: {
-        supplier: true,
-        purchaseItems: {
-          productUnit: {
-            product: true,
-            unit: true,
-          },
-        },
-      },
+  async findAll({
+    page,
+    limit,
+    searchQuery = '',
+  }: PaginationParams): Promise<PaginatedResult<Purchase>> {
+    // Sécurise les valeurs
+    page = Math.max(1, Number(page));
+    limit = Math.max(1, Number(limit));
+
+    const [data, total] = await this.purchasesRepository.findAndCount({
+      where: searchQuery
+        ? [
+            {
+              supplier: {
+                name: ILike(`%${searchQuery}%`),
+              },
+            },
+          ]
+        : {},
+      relations: [
+        'supplier',
+        'purchaseItems',
+        // supplier: true,
+        // purchaseItems: {
+        //   productUnit: {
+        //     product: true,
+        //     unit: true,
+        //   },
+        // },
+      ],
       order: {
         purchaseDate: 'DESC',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    const hasNextPage = page < Math.ceil(total / limit);
+
+    return { data, total, hasNextPage, hasPreviousPage: page > 1 };
   }
 
   async findByMission(missionId: string): Promise<Purchase[]> {

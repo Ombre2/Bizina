@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -92,10 +93,21 @@ export class PurchaseController {
     type: Purchase,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.purchaseService.findAll();
+  async findAll(
+    @Query('page') page: number = 2,
+    @Query('limit') limit: number = 10,
+    @Query('searchQuery') searchQuery: string = '',
+  ) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.purchaseService.findAll({ page, limit, searchQuery });
 
-    return ResponseUtil.success(result, 'Liste des achats récupérée');
+    return ResponseUtil.success(data, 'Liste des achats récupérée', {
+      total,
+      page,
+      limit,
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')
