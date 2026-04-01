@@ -4,7 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { PaginatedResult } from 'src/types/pagination-params.type';
+import { FilterGlobalDto } from 'src/utils/filter.global.dto';
+import { ILike, Repository } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
@@ -43,12 +45,32 @@ export class CustomersService {
     return this.customersRepository.save(customer);
   }
 
-  findAll(): Promise<Customer[]> {
-    return this.customersRepository.find({
+  async findAll(filter: FilterGlobalDto): Promise<PaginatedResult<Customer>> {
+    const search = filter.searchQuery?.trim();
+
+    const [customers, total] = await this.customersRepository.findAndCount({
+      where: search
+        ? [
+            { name: ILike(`%${search}%`) },
+            { phone: ILike(`%${search}%`) },
+            { address: ILike(`%${search}%`) },
+          ]
+        : undefined,
       order: {
         name: 'ASC',
       },
+      skip: (filter.page - 1) * filter.limit,
+      take: filter.limit,
     });
+
+    const hasNextPage = filter.page < Math.ceil(total / filter.limit);
+
+    return {
+      data: customers,
+      total,
+      hasNextPage,
+      hasPreviousPage: filter.page > 1,
+    };
   }
 
   async findOne(id: string): Promise<Customer> {

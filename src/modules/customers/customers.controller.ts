@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -24,6 +25,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/config/jwt-auth.guard';
+import { FilterGlobalDto } from 'src/utils/filter.global.dto';
 import { ResponseUtil } from 'src/utils/response.util';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -66,10 +68,17 @@ export class CustomersController {
     type: Customer,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.customersService.findAll();
+  async findAll(@Query() query: FilterGlobalDto) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.customersService.findAll(query);
 
-    return ResponseUtil.success(result, 'Liste des clients récupérée');
+    return ResponseUtil.success(data, 'Liste des clients récupérée', {
+      total,
+      page: query.page,
+      limit: query.limit,
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')
