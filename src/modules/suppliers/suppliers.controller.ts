@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -24,6 +25,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/config/jwt-auth.guard';
+import { FilterGlobalDto } from 'src/utils/filter.global.dto';
 import { ResponseUtil } from 'src/utils/response.util';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
@@ -66,10 +68,17 @@ export class SuppliersController {
     type: Supplier,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.suppliersService.findAll();
+  async findAll(@Query() query: FilterGlobalDto) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.suppliersService.findAll(query);
 
-    return ResponseUtil.success(result, 'Liste des fournisseurs récupérée');
+    return ResponseUtil.success(data, 'Liste des fournisseurs récupérée', {
+      total,
+      page: query.page,
+      limit: query.limit,
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')
