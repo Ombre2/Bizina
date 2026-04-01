@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginatedResult } from 'src/types/pagination-params.type';
 import { Repository } from 'typeorm';
 import { CustomersService } from '../customers/customers.service';
 import { ProductUnitsService } from '../product-units/product-units.service';
@@ -11,6 +12,7 @@ import { CreateSaleItemDto } from '../sale-items/dto/create-sale-item.dto';
 import { SaleItemsService } from '../sale-items/sale-items.service';
 import { StockMovementsService } from '../stock-movements/stock-movements.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
+import { FindSalesDto } from './dto/find-sales.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { PaymentStatus, Sale } from './entities/sale.entity';
 
@@ -109,16 +111,80 @@ export class SalesService {
     };
   }
 
-  async findAll() {
-    const sales = await this.salesRepository.find({
-      relations: {
-        customer: true,
-        saleItems: { productUnit: { product: true, unit: true } },
-        salePayments: { paymentMethod: true },
-      },
-      order: { saleDate: 'DESC' },
-    });
-    return sales.map((sale) => this.withPaymentStatus(sale));
+  async findAll(params: FindSalesDto): Promise<PaginatedResult<Sale>> {
+    const {
+      page = 1,
+      limit = 10,
+      startDate,
+      endDate,
+      customerId,
+      isPaid,
+    } = params;
+
+    const qb = this.salesRepository
+      .createQueryBuilder('sale')
+      .leftJoinAndSelect('sale.customer', 'customer')
+      .leftJoinAndSelect('sale.saleItems', 'saleItem')
+      .leftJoinAndSelect('saleItem.productUnit', 'productUnit')
+      .leftJoinAndSelect('productUnit.product', 'product')
+      .leftJoinAndSelect('productUnit.unit', 'unit')
+      .leftJoinAndSelect('sale.salePayments', 'salePayments')
+      .leftJoinAndSelect('salePayments.paymentMethod', 'paymentMethod');
+
+    // 👉 TOTAL PAID (clé du problème)
+    qb.addSelect('COALESCE(SUM(salePayments.amount), 0)', 'paidAmount');
+
+    // 👉 GROUP BY obligatoire à cause du SUM
+    qb.groupBy('sale.id')
+      .addGroupBy('customer.id')
+      .addGroupBy('saleItem.id')
+      .addGroupBy('productUnit.id')
+      .addGroupBy('product.id')
+      .addGroupBy('unit.id')
+      .addGroupBy('paymentMethod.id');
+
+    // 👉 FILTERS
+    if (customerId) {
+      qb.andWhere('customer.id = :customerId', { customerId });
+    }
+
+    if (startDate && endDate) {
+      qb.andWhere('sale.saleDate BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      });
+    }
+
+    // 👉 FILTER isPaid (🔥 maintenant possible)
+    if (isPaid !== undefined) {
+      const subQuery = `(SELECT COALESCE(SUM(sp.amount), 0)
+                     FROM sale_payments sp
+                     WHERE sp.sale_id = sale.id)`;
+
+      if (isPaid === '1') {
+        qb.andWhere(`${subQuery} >= sale.totalAmount`);
+      } else if (isPaid === '0') {
+        qb.andWhere(`${subQuery} < sale.totalAmount`);
+      }
+    }
+
+    // 👉 ORDER + PAGINATION
+    qb.orderBy('sale.saleDate', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    // 👉 EXEC
+    const [data, total] = await qb.getManyAndCount();
+
+    // 👉 enrichissement (optionnel si tu veux garder ton format)
+    const sales = data.map((sale) => this.withPaymentStatus(sale));
+
+    return {
+      data: sales,
+      total,
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    };
   }
 
   async findByMission(missionId: string) {

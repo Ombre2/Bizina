@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -26,6 +27,7 @@ import {
 import { JwtAuthGuard } from 'src/config/jwt-auth.guard';
 import { ResponseUtil } from 'src/utils/response.util';
 import { CreateSaleDto } from './dto/create-sale.dto';
+import { FindSalesDto } from './dto/find-sales.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { Sale } from './entities/sale.entity';
 import { SalesService } from './sales.service';
@@ -71,10 +73,17 @@ export class SalesController {
     type: Sale,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.salesService.findAll();
+  async findAll(@Query() query: FindSalesDto) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.salesService.findAll(query);
 
-    return ResponseUtil.success(result, 'Liste des ventes récupérée');
+    return ResponseUtil.success(data, 'Liste des ventes récupérée', {
+      total,
+      page: query.page,
+      limit: query.limit,
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')

@@ -1,31 +1,7 @@
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { FilterGlobalDto } from 'src/utils/filter.global.dto';
 
-export class FindPurchaseDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit: number = 10;
-
-  @IsOptional()
-  @IsString()
-  searchQuery?: string;
-
-  @IsOptional()
-  @IsString()
-  startDate?: string;
-
-  @IsOptional()
-  @IsString()
-  endDate?: string;
-
+export class FindPurchaseDto extends FilterGlobalDto {
   @IsOptional()
   @IsString()
   @IsUUID('4', {

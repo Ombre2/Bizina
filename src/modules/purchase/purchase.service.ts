@@ -68,14 +68,7 @@ export class PurchaseService {
   }
 
   async findAll(params: FindPurchaseDto): Promise<PaginatedResult<Purchase>> {
-    const {
-      page = 1,
-      limit = 10,
-      searchQuery,
-      endDate,
-      startDate,
-      supplierId,
-    } = params;
+    const { page = 1, limit = 10, endDate, startDate, supplierId } = params;
 
     const where: FindOptionsWhere<Purchase> = {
       supplier: supplierId ? { id: supplierId } : undefined,
