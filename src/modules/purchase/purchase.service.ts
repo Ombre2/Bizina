@@ -5,16 +5,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  PaginatedResult,
-  PaginationParams,
-} from 'src/types/pagination-params.type';
-import { ILike, Repository } from 'typeorm';
+import { PaginatedResult } from 'src/types/pagination-params.type';
+import { Between, FindOptionsWhere, Repository } from 'typeorm';
 import { CreatePurchaseItemDto } from '../purchase-item/dto/create-purchase-item.dto';
 import { PurchaseItemService } from '../purchase-item/purchase-item.service';
 import { StockMovementsService } from '../stock-movements/stock-movements.service';
 import { SuppliersService } from '../suppliers/suppliers.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { FindPurchaseDto } from './dto/find-purchase.dto';
 import { UpdatePurchaseDto } from './dto/update-purchase.dto';
 import { Purchase } from './entities/purchase.entity';
 
@@ -69,36 +67,27 @@ export class PurchaseService {
     return this.findOne(savedPurchase.id);
   }
 
-  async findAll({
-    page,
-    limit,
-    searchQuery = '',
-  }: PaginationParams): Promise<PaginatedResult<Purchase>> {
-    // Sécurise les valeurs
-    page = Math.max(1, Number(page));
-    limit = Math.max(1, Number(limit));
+  async findAll(params: FindPurchaseDto): Promise<PaginatedResult<Purchase>> {
+    const {
+      page = 1,
+      limit = 10,
+      searchQuery,
+      endDate,
+      startDate,
+      supplierId,
+    } = params;
+
+    const where: FindOptionsWhere<Purchase> = {
+      supplier: supplierId ? { id: supplierId } : undefined,
+      purchaseDate:
+        startDate && endDate
+          ? Between(new Date(startDate), new Date(endDate))
+          : undefined,
+    };
 
     const [data, total] = await this.purchasesRepository.findAndCount({
-      where: searchQuery
-        ? [
-            {
-              supplier: {
-                name: ILike(`%${searchQuery}%`),
-              },
-            },
-          ]
-        : {},
-      relations: [
-        'supplier',
-        'purchaseItems',
-        // supplier: true,
-        // purchaseItems: {
-        //   productUnit: {
-        //     product: true,
-        //     unit: true,
-        //   },
-        // },
-      ],
+      where: where,
+      relations: ['supplier', 'purchaseItems'],
       order: {
         purchaseDate: 'DESC',
       },

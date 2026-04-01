@@ -27,6 +27,7 @@ import {
 import { JwtAuthGuard } from 'src/config/jwt-auth.guard';
 import { ResponseUtil } from 'src/utils/response.util';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { FindPurchaseDto } from './dto/find-purchase.dto';
 import { UpdatePurchaseDto } from './dto/update-purchase.dto';
 import { Purchase } from './entities/purchase.entity';
 import { PurchaseService } from './purchase.service';
@@ -93,18 +94,14 @@ export class PurchaseController {
     type: Purchase,
     isArray: true,
   })
-  async findAll(
-    @Query('page') page: number = 2,
-    @Query('limit') limit: number = 10,
-    @Query('searchQuery') searchQuery: string = '',
-  ) {
+  async findAll(@Query() query: FindPurchaseDto) {
     const { data, total, hasNextPage, hasPreviousPage } =
-      await this.purchaseService.findAll({ page, limit, searchQuery });
+      await this.purchaseService.findAll(query);
 
     return ResponseUtil.success(data, 'Liste des achats récupérée', {
       total,
-      page,
-      limit,
+      page: query.page,
+      limit: query.limit,
       hasNextPage,
       hasPreviousPage,
     });
