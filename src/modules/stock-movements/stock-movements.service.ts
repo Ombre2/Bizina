@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginatedResult } from 'src/types/pagination-params.type';
 import { Repository } from 'typeorm';
 import { ProductUnitsService } from '../product-units/product-units.service';
 import type { PurchaseItem } from '../purchase-item/entities/purchase-item.entity';
@@ -13,6 +14,7 @@ import type { Purchase } from '../purchase/entities/purchase.entity';
 import type { SaleItem } from '../sale-items/entities/sale-item.entity';
 import type { Sale } from '../sales/entities/sale.entity';
 import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
+import { FindStockMovementsDto } from './dto/find-stock-movements.dto';
 import { MovementType, StockMovement } from './entities/stock-movement.entity';
 
 @Injectable()
@@ -50,17 +52,59 @@ export class StockMovementsService {
     return this.findOne(saved.id);
   }
 
-  findAll(): Promise<StockMovement[]> {
-    return this.stockMovementsRepository.find({
-      relations: {
-        product: true,
-        sale: true,
-        purchase: true,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+  async findAll(
+    params: FindStockMovementsDto,
+  ): Promise<PaginatedResult<StockMovement>> {
+    const {
+      page = 1,
+      limit = 10,
+      searchQuery,
+      startDate,
+      endDate,
+      productId,
+      movementType,
+    } = params;
+
+    const qb = this.stockMovementsRepository
+      .createQueryBuilder('sm')
+      .leftJoinAndSelect('sm.product', 'product')
+      .leftJoinAndSelect('sm.sale', 'sale')
+      .leftJoinAndSelect('sm.purchase', 'purchase')
+      .leftJoinAndSelect('sm.mission', 'mission');
+
+    if (searchQuery) {
+      qb.andWhere('product.name LIKE :search', {
+        search: `%${searchQuery}%`,
+      });
+    }
+
+    if (productId) {
+      qb.andWhere('product.id = :productId', { productId });
+    }
+
+    if (movementType) {
+      qb.andWhere('sm.movementType = :movementType', { movementType });
+    }
+
+    if (startDate && endDate) {
+      qb.andWhere('sm.createdAt BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      });
+    }
+
+    qb.orderBy('sm.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return {
+      data,
+      total,
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    };
   }
 
   async findOne(id: string): Promise<StockMovement> {

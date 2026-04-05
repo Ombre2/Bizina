@@ -132,16 +132,23 @@ export class SalesService {
       .leftJoinAndSelect('salePayments.paymentMethod', 'paymentMethod');
 
     // 👉 TOTAL PAID (clé du problème)
-    qb.addSelect('COALESCE(SUM(salePayments.amount), 0)', 'paidAmount');
+    // qb.addSelect('COALESCE(SUM(salePayments.amount), 0)', 'paidAmount');
+
+    qb.addSelect((subQuery) => {
+  return subQuery
+    .select('COALESCE(SUM(sp.amount), 0)', 'paidAmount')
+    .from('sale_payments', 'sp')
+    .where('sp.sale_id = sale.id');
+}, 'paidAmount');
 
     // 👉 GROUP BY obligatoire à cause du SUM
-    qb.groupBy('sale.id')
-      .addGroupBy('customer.id')
-      .addGroupBy('saleItem.id')
-      .addGroupBy('productUnit.id')
-      .addGroupBy('product.id')
-      .addGroupBy('unit.id')
-      .addGroupBy('paymentMethod.id');
+    // qb.groupBy('sale.id')
+    //   .addGroupBy('customer.id')
+    //   .addGroupBy('saleItem.id')
+    //   .addGroupBy('productUnit.id')
+    //   .addGroupBy('product.id')
+    //   .addGroupBy('unit.id')
+    //   .addGroupBy('paymentMethod.id');
 
     // 👉 FILTERS
     if (customerId) {

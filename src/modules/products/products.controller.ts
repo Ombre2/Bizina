@@ -68,7 +68,7 @@ export class ProductsController {
     isArray: true,
   })
   async findAll(
-    @Query('page') page: number = 2,
+    @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
     @Query('searchQuery') searchQuery: string = '',
   ) {

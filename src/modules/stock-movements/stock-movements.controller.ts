@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -25,6 +26,7 @@ import {
 import { JwtAuthGuard } from 'src/config/jwt-auth.guard';
 import { ResponseUtil } from 'src/utils/response.util';
 import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
+import { FindStockMovementsDto } from './dto/find-stock-movements.dto';
 import { StockMovement } from './entities/stock-movement.entity';
 import { StockMovementsService } from './stock-movements.service';
 
@@ -66,12 +68,20 @@ export class StockMovementsController {
     type: StockMovement,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.stockMovementsService.findAll();
+  async findAll(@Query() query: FindStockMovementsDto) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.stockMovementsService.findAll(query);
 
     return ResponseUtil.success(
-      result,
+      data,
       'Liste des mouvements de stock récupérée',
+      {
+        total,
+        page: query.page,
+        limit: query.limit,
+        hasNextPage,
+        hasPreviousPage,
+      },
     );
   }
 
