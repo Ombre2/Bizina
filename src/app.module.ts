@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { CustomersModule } from './modules/customers/customers.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { Customer } from './modules/customers/entities/customer.entity';
 import { ExpenseCategory } from './modules/expense-category/entities/expense-category.entity';
 import { ExpenseCategoryModule } from './modules/expense-category/expense-category.module';
@@ -80,6 +81,7 @@ import { UsersModule } from './modules/users/users.module';
     }),
 
     UsersModule,
+    DashboardModule,
     AuthModule,
     UnitsModule,
     ProductsModule,
