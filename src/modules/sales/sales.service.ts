@@ -135,11 +135,11 @@ export class SalesService {
     // qb.addSelect('COALESCE(SUM(salePayments.amount), 0)', 'paidAmount');
 
     qb.addSelect((subQuery) => {
-  return subQuery
-    .select('COALESCE(SUM(sp.amount), 0)', 'paidAmount')
-    .from('sale_payments', 'sp')
-    .where('sp.sale_id = sale.id');
-}, 'paidAmount');
+      return subQuery
+        .select('COALESCE(SUM(sp.amount), 0)', 'paidAmount')
+        .from('sale_payments', 'sp')
+        .where('sp.sale_id = sale.id');
+    }, 'paidAmount');
 
     // 👉 GROUP BY obligatoire à cause du SUM
     // qb.groupBy('sale.id')

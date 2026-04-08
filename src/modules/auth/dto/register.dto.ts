@@ -4,7 +4,9 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class RegisterDto {
@@ -14,7 +16,9 @@ export class RegisterDto {
   })
   @IsString()
   @IsNotEmpty()
-  username: string;
+  @MinLength(3)
+  @MaxLength(50)
+  username!: string;
 
   @ApiPropertyOptional({
     description: 'Email utilisateur (facultatif)',
@@ -26,10 +30,17 @@ export class RegisterDto {
   email?: string;
 
   @ApiProperty({
-    description: 'Mot de passe utilisateur',
+    description:
+      'Mot de passe (min 8 caractères, 1 majuscule, 1 chiffre, 1 caractère spécial)',
     example: 'StrongPass123!',
   })
   @IsString()
   @IsNotEmpty()
-  password: string;
+  @MinLength(8)
+  @MaxLength(128)
+  @Matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/, {
+    message:
+      'Le mot de passe doit contenir au moins 1 majuscule, 1 chiffre et 1 caractère spécial',
+  })
+  password!: string;
 }

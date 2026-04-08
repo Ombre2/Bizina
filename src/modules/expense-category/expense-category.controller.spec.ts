@@ -11,7 +11,9 @@ describe('ExpenseCategoryController', () => {
       providers: [ExpenseCategoryService],
     }).compile();
 
-    controller = module.get<ExpenseCategoryController>(ExpenseCategoryController);
+    controller = module.get<ExpenseCategoryController>(
+      ExpenseCategoryController,
+    );
   });
 
   it('should be defined', () => {

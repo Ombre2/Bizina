@@ -73,14 +73,15 @@ export class ProductsService {
         'baseUnit',
         'productUnits',
         'productUnits.unit',
-        'stockMovements'],
+        'stockMovements',
+      ],
       order: { name: 'ASC' },
       skip: (page - 1) * limit,
       take: limit,
     });
 
-     // Ajout du stock courant calculé à chaque produit
-    const dataWithStock =  data.map((product) => {
+    // Ajout du stock courant calculé à chaque produit
+    const dataWithStock = data.map((product) => {
       const stock = (product.stockMovements || []).reduce(
         (acc, sm) => acc + Number(sm.quantity),
         0,
@@ -90,7 +91,12 @@ export class ProductsService {
 
     const hasNextPage = page < Math.ceil(total / limit);
 
-    return { data: dataWithStock, total, hasNextPage, hasPreviousPage: page > 1 };
+    return {
+      data: dataWithStock,
+      total,
+      hasNextPage,
+      hasPreviousPage: page > 1,
+    };
   }
 
   async findOne(id: string) {

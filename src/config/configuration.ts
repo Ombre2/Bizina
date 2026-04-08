@@ -15,7 +15,23 @@ export default () => ({
   },
 
   jwt: {
-    secret: process.env.JWT_SECRET ?? 'default-secret',
-    expiresIn: process.env.JWT_EXPIRES_IN ?? '3600s',
+    secret: (() => {
+      if (!process.env.JWT_SECRET) {
+        throw new Error(
+          "JWT_SECRET est obligatoire. Définissez la variable d'environnement JWT_SECRET.",
+        );
+      }
+      return process.env.JWT_SECRET;
+    })(),
+    expiresIn: process.env.JWT_EXPIRES_IN ?? '15m',
+    refreshSecret: (() => {
+      if (!process.env.JWT_REFRESH_SECRET) {
+        throw new Error(
+          "JWT_REFRESH_SECRET est obligatoire. Définissez la variable d'environnement JWT_REFRESH_SECRET.",
+        );
+      }
+      return process.env.JWT_REFRESH_SECRET;
+    })(),
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
   },
 });
