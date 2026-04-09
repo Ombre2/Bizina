@@ -1,6 +1,11 @@
 import { hash } from 'bcryptjs';
 import { AppDataSource } from 'src/config/ormconfig';
 import { Customer } from 'src/modules/customers/entities/customer.entity';
+import { ExpenseCategory } from 'src/modules/expense-category/entities/expense-category.entity';
+import {
+  Mission,
+  MissionStatus,
+} from 'src/modules/mission/entities/mission.entity';
 import { PaymentMethod } from 'src/modules/payment-methods/entities/payment-method.entity';
 import { ProductUnit } from 'src/modules/product-units/entities/product-unit.entity';
 import { Product } from 'src/modules/products/entities/product.entity';
@@ -17,12 +22,59 @@ async function seed() {
   const unitsData = [
     { name: 'Kilogramme', symbol: 'kg' },
     { name: 'Gramme', symbol: 'g' },
+    { name: 'Milligramme', symbol: 'mg' },
+    { name: 'Tonne', symbol: 't' },
+
     { name: 'Litre', symbol: 'L' },
     { name: 'Millilitre', symbol: 'mL' },
+    { name: 'Centilitre', symbol: 'cL' },
+    { name: 'Kilolitre', symbol: 'kL' },
+    { name: 'Gallon', symbol: 'gal' },
+    { name: 'Once liquide', symbol: 'oz' },
+    { name: 'Mètre cube', symbol: 'm³' },
+
+    { name: 'Mètre', symbol: 'm' },
+    { name: 'Centimètre', symbol: 'cm' },
+    { name: 'Mètre linéaire', symbol: 'ml' },
+    { name: 'Yard', symbol: 'yd' },
+    { name: 'Pied', symbol: 'ft' },
+    { name: 'Pouce', symbol: 'in' },
+    { name: 'Mètre carré', symbol: 'm²' },
+
     { name: 'Pièce', symbol: 'pcs' },
+    { name: 'Unité', symbol: 'u' },
+    { name: 'Lot', symbol: 'lot' },
+    { name: 'Set', symbol: 'set' },
+    { name: 'Kit', symbol: 'kit' },
+    { name: 'Douzaine', symbol: 'dz' },
+
     { name: 'Carton', symbol: 'ctn' },
     { name: 'Sac', symbol: 'sac' },
     { name: 'Bouteille', symbol: 'btl' },
+    { name: 'Paquet', symbol: 'pkt' },
+    { name: 'Pack', symbol: 'pk' },
+    { name: 'Sachet', symbol: 'sht' },
+    { name: 'Bidon', symbol: 'bdn' },
+    { name: 'Caisse', symbol: 'cse' },
+    { name: 'Boîte', symbol: 'box' },
+    { name: 'Pot', symbol: 'pot' },
+    { name: 'Canette', symbol: 'can' },
+    { name: 'Flacon', symbol: 'flc' },
+    { name: 'Tube', symbol: 'tub' },
+    { name: 'Rouleau', symbol: 'rle' },
+    { name: 'Palette', symbol: 'pal' },
+    { name: 'Baril', symbol: 'brl' },
+    { name: 'Fût', symbol: 'fut' },
+    { name: 'Tonneau', symbol: 'tnx' },
+
+    { name: 'Tranche', symbol: 'tr' },
+    { name: 'Morceau', symbol: 'mrc' },
+    { name: 'Portion', symbol: 'prt' },
+    { name: 'Barquette', symbol: 'bqt' },
+    { name: 'Plateau', symbol: 'plt' },
+
+    { name: 'Cuillère à soupe', symbol: 'càs' },
+    { name: 'Cuillère à café', symbol: 'càc' },
   ];
   const units: Unit[] = [];
   for (const data of unitsData) {
@@ -159,6 +211,56 @@ async function seed() {
     }
   }
   console.log(`✔ ${pmCount} payment methods seeded.`);
+
+  // --- Expense Categories ---
+  const ecRepo = AppDataSource.getRepository(ExpenseCategory);
+  const ecData = [
+    { name: 'Carburant', description: 'Essence, diesel, transports' },
+    { name: 'Personnel', description: 'Salaires, commissions' },
+    { name: 'Fournitures', description: 'Matériel de bureau, emballages' },
+    { name: 'Transport', description: 'Frais de déplacement, livraison' },
+    { name: 'Maintenance', description: 'Réparations, entretien' },
+    { name: 'Divers', description: 'Autres dépenses' },
+  ];
+  let ecCount = 0;
+  for (const data of ecData) {
+    const existing = await ecRepo.findOne({ where: { name: data.name } });
+    if (!existing) {
+      await ecRepo.save(ecRepo.create(data));
+      ecCount++;
+    }
+  }
+  console.log(`✔ ${ecCount} expense categories seeded.`);
+
+  // --- Missions ---
+  const missionRepo = AppDataSource.getRepository(Mission);
+  const manager = await AppDataSource.getRepository(User).findOne({
+    where: { username: 'manager' },
+  });
+
+  if (!manager) {
+    console.warn('⚠️  Manager user not found, skipping missions seed');
+  } else {
+    const missionsData = [
+      {
+        title: 'Achat riz auprès de Bralima - Avril 2026',
+        assignedTo: manager,
+        initialCash: 2000,
+        status: MissionStatus.ONGOING,
+      },
+    ];
+    let missionsCount = 0;
+    for (const data of missionsData) {
+      const existing = await missionRepo.findOne({
+        where: { title: data.title },
+      });
+      if (!existing) {
+        await missionRepo.save(missionRepo.create(data));
+        missionsCount++;
+      }
+    }
+    console.log(`✔ ${missionsCount} missions seeded.`);
+  }
 
   // --- Products ---
   const productRepo = AppDataSource.getRepository(Product);
