@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  PaginatedResult,
+  PaginationParams,
+} from 'src/types/pagination-params.type';
 import { SaleWithItemsResponseDto } from 'src/types/type';
 import { In, Repository } from 'typeorm';
 import { ProductUnit } from '../product-units/entities/product-unit.entity';
@@ -117,8 +121,13 @@ export class SaleItemsService {
     });
   }
 
-  findAll(): Promise<SaleItem[]> {
-    return this.saleItemsRepository.find({
+  async findAll({
+    page = 1,
+    limit = 100,
+  }: Partial<PaginationParams> = {}): Promise<PaginatedResult<SaleItem>> {
+    page = Math.max(1, Number(page));
+    limit = Math.max(1, Math.min(200, Number(limit)));
+    const [data, total] = await this.saleItemsRepository.findAndCount({
       relations: {
         sale: true,
         productUnit: {
@@ -129,7 +138,15 @@ export class SaleItemsService {
       order: {
         id: 'DESC',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return {
+      data,
+      total,
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    };
   }
 
   async findOne(id: string): Promise<SaleItem> {

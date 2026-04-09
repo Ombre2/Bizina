@@ -18,8 +18,13 @@ import { AuthService } from './auth.service';
           configService.get<StringValue>('jwt.expiresIn') ??
           ('60s' as StringValue);
 
+        const secret = configService.get<string>('jwt.secret');
+        if (!secret) {
+          throw new Error('JWT_SECRET is not defined');
+        }
+
         return {
-          secret: configService.get<string>('jwt.secret') ?? 'default-secret',
+          secret,
           signOptions: {
             expiresIn,
           },

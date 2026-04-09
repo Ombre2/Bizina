@@ -68,6 +68,7 @@ export class StockMovementsService {
     const qb = this.stockMovementsRepository
       .createQueryBuilder('sm')
       .leftJoinAndSelect('sm.product', 'product')
+      .leftJoinAndSelect('product.baseUnit', 'baseUnit')
       .leftJoinAndSelect('sm.sale', 'sale')
       .leftJoinAndSelect('sm.purchase', 'purchase')
       .leftJoinAndSelect('sm.mission', 'mission');

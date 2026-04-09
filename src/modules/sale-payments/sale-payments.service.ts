@@ -5,6 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {
+  PaginatedResult,
+  PaginationParams,
+} from 'src/types/pagination-params.type';
 import { PaymentMethodsService } from '../payment-methods/payment-methods.service';
 import { SalesService } from '../sales/sales.service';
 import { CreateSalePaymentDto } from './dto/create-sale-payment.dto';
@@ -58,8 +62,13 @@ export class SalePaymentsService {
     return this.findOne(saved.id);
   }
 
-  findAll(): Promise<SalePayment[]> {
-    return this.salePaymentsRepository.find({
+  async findAll({
+    page = 1,
+    limit = 100,
+  }: Partial<PaginationParams> = {}): Promise<PaginatedResult<SalePayment>> {
+    page = Math.max(1, Number(page));
+    limit = Math.max(1, Math.min(200, Number(limit)));
+    const [data, total] = await this.salePaymentsRepository.findAndCount({
       relations: {
         sale: true,
         paymentMethod: true,
@@ -67,7 +76,15 @@ export class SalePaymentsService {
       order: {
         paymentDate: 'DESC',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return {
+      data,
+      total,
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    };
   }
 
   findBySaleId(saleId: string): Promise<SalePayment[]> {

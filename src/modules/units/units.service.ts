@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  PaginatedResult,
+  PaginationParams,
+} from 'src/types/pagination-params.type';
 import { Repository } from 'typeorm';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
@@ -17,12 +21,25 @@ export class UnitsService {
     return this.unitsRepository.save(unit);
   }
 
-  findAll(): Promise<Unit[]> {
-    return this.unitsRepository.find({
+  async findAll({
+    page = 1,
+    limit = 100,
+  }: Partial<PaginationParams> = {}): Promise<PaginatedResult<Unit>> {
+    page = Math.max(1, Number(page));
+    limit = Math.max(1, Math.min(200, Number(limit)));
+    const [data, total] = await this.unitsRepository.findAndCount({
       order: {
         name: 'ASC',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return {
+      data,
+      total,
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    };
   }
 
   async findOne(id: string): Promise<Unit> {

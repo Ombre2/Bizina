@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -66,12 +67,23 @@ export class ProductUnitsController {
     type: ProductUnit,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.productUnitsService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 100,
+  ) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.productUnitsService.findAll({ page, limit });
 
     return ResponseUtil.success(
-      result,
+      data,
       'Liste des associations produit/unité récupérée',
+      {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        hasNextPage,
+        hasPreviousPage,
+      },
     );
   }
 

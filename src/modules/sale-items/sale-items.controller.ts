@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -64,10 +65,20 @@ export class SaleItemsController {
     type: SaleItem,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.saleItemsService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 100,
+  ) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.saleItemsService.findAll({ page, limit });
 
-    return ResponseUtil.success(result, 'Liste des lignes de vente récupérée');
+    return ResponseUtil.success(data, 'Liste des lignes de vente récupérée', {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')

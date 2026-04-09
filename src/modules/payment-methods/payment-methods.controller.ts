@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -68,13 +69,20 @@ export class PaymentMethodsController {
     type: PaymentMethod,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.paymentMethodsService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 100,
+  ) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.paymentMethodsService.findAll({ page, limit });
 
-    return ResponseUtil.success(
-      result,
-      'Liste des modes de paiement récupérée',
-    );
+    return ResponseUtil.success(data, 'Liste des modes de paiement récupérée', {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')

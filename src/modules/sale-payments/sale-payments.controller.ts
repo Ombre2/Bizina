@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -66,16 +67,26 @@ export class SalePaymentsController {
     type: SalePayment,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.salePaymentsService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 100,
+  ) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.salePaymentsService.findAll({ page, limit });
 
-    return ResponseUtil.success(result, 'Liste des paiements récupérée');
+    return ResponseUtil.success(data, 'Liste des paiements récupérée', {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get('sale/:saleId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Lister les paiements d\'une vente' })
+  @ApiOperation({ summary: "Lister les paiements d'une vente" })
   @ApiParam({ name: 'saleId', description: 'Identifiant UUID de la vente' })
   @ApiOkResponse({
     description: 'Liste des paiements de la vente',

@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  PaginatedResult,
+  PaginationParams,
+} from 'src/types/pagination-params.type';
 import { Repository } from 'typeorm';
 import { MissionService } from '../mission/mission.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
@@ -25,8 +29,22 @@ export class ExpensesService {
     return this.expenseRepository.save(expense);
   }
 
-  async findAll(): Promise<Expense[]> {
-    return this.expenseRepository.find();
+  async findAll({
+    page = 1,
+    limit = 100,
+  }: Partial<PaginationParams> = {}): Promise<PaginatedResult<Expense>> {
+    page = Math.max(1, Number(page));
+    limit = Math.max(1, Math.min(200, Number(limit)));
+    const [data, total] = await this.expenseRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    return {
+      data,
+      total,
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    };
   }
 
   async findByMission(missionId: string): Promise<Expense[]> {

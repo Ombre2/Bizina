@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -63,10 +64,20 @@ export class UnitsController {
     type: Unit,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.unitsService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 100,
+  ) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.unitsService.findAll({ page, limit });
 
-    return ResponseUtil.success(result, 'Liste des unités récupérée');
+    return ResponseUtil.success(data, 'Liste des unités récupérée', {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')

@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -58,9 +59,20 @@ export class ExpensesController {
     description: 'Liste des dépenses récupérée',
     type: [Object],
   })
-  async findAll() {
-    const result = await this.expensesService.findAll();
-    return ResponseUtil.success(result, 'Liste des dépenses récupérée');
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 100,
+  ) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.expensesService.findAll({ page, limit });
+
+    return ResponseUtil.success(data, 'Liste des dépenses récupérée', {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')

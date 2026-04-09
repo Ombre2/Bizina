@@ -10,6 +10,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -87,10 +88,20 @@ export class UsersController {
     type: User,
     isArray: true,
   })
-  async findAll() {
-    const result = await this.usersService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 100,
+  ) {
+    const { data, total, hasNextPage, hasPreviousPage } =
+      await this.usersService.findAll({ page, limit });
 
-    return ResponseUtil.success(result, 'Liste des utilisateurs recuperee');
+    return ResponseUtil.success(data, 'Liste des utilisateurs recuperee', {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      hasNextPage,
+      hasPreviousPage,
+    });
   }
 
   @Get(':id')
