@@ -72,6 +72,22 @@ export class SalePaymentsController {
     return ResponseUtil.success(result, 'Liste des paiements récupérée');
   }
 
+  @Get('sale/:saleId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lister les paiements d\'une vente' })
+  @ApiParam({ name: 'saleId', description: 'Identifiant UUID de la vente' })
+  @ApiOkResponse({
+    description: 'Liste des paiements de la vente',
+    type: SalePayment,
+    isArray: true,
+  })
+  async findBySaleId(@Param('saleId') saleId: string) {
+    const result = await this.salePaymentsService.findBySaleId(saleId);
+
+    return ResponseUtil.success(result, 'Paiements de la vente récupérés');
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

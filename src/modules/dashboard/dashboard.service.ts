@@ -58,20 +58,17 @@ export class DashboardService {
     for (let i = count - 1; i >= 0; i -= 1) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
-      days.push(date.toISOString().slice(0, 10));
+      // Utilise le timezone local (aligné avec MySQL) au lieu de UTC
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      days.push(`${yyyy}-${mm}-${dd}`);
     }
 
     return days;
   }
 
   async getSummary() {
-    const now = new Date();
-    const startOfDay = new Date(now);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(now);
-    endOfDay.setHours(23, 59, 59, 999);
-
     const [
       totalProducts,
       totalCustomers,
@@ -106,29 +103,21 @@ export class DashboardService {
         .createQueryBuilder('expense')
         .select('COALESCE(SUM(expense.amount), 0)', 'total')
         .getRawOne<{ total: string }>(),
+      // "Aujourd'hui" basé sur CURDATE() MySQL pour rester cohérent avec le chart 7 jours
       this.saleRepository
         .createQueryBuilder('sale')
         .select('COALESCE(SUM(sale.totalAmount), 0)', 'total')
-        .where('sale.saleDate BETWEEN :start AND :end', {
-          start: startOfDay,
-          end: endOfDay,
-        })
+        .where('DATE(sale.saleDate) = CURDATE()')
         .getRawOne<{ total: string }>(),
       this.purchaseRepository
         .createQueryBuilder('purchase')
         .select('COALESCE(SUM(purchase.totalAmount), 0)', 'total')
-        .where('purchase.purchaseDate BETWEEN :start AND :end', {
-          start: startOfDay,
-          end: endOfDay,
-        })
+        .where('DATE(purchase.purchaseDate) = CURDATE()')
         .getRawOne<{ total: string }>(),
       this.expenseRepository
         .createQueryBuilder('expense')
         .select('COALESCE(SUM(expense.amount), 0)', 'total')
-        .where('expense.createdAt BETWEEN :start AND :end', {
-          start: startOfDay,
-          end: endOfDay,
-        })
+        .where('DATE(expense.createdAt) = CURDATE()')
         .getRawOne<{ total: string }>(),
       this.saleRepository
         .createQueryBuilder('sale')
@@ -165,9 +154,9 @@ export class DashboardService {
         order: { saleDate: 'DESC' },
         take: 5,
       }),
-      this.stockMovementRepository
-        .createQueryBuilder('sm')
-        .leftJoin('sm.product', 'product')
+      this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('product.stockMovements', 'sm')
         .leftJoin('product.baseUnit', 'baseUnit')
         .select('product.id', 'productId')
         .addSelect('product.name', 'productName')
@@ -180,7 +169,7 @@ export class DashboardService {
           threshold: 10,
         })
         .orderBy('quantity', 'ASC')
-        .limit(5)
+        .limit(20)
         .getRawMany<{
           productId: string;
           productName: string;
@@ -210,14 +199,35 @@ export class DashboardService {
       baseUnitSymbol: item.baseUnitSymbol,
     }));
 
+    // MySQL DATE() peut retourner un objet Date ou une string selon le driver.
+    // On normalise en string "YYYY-MM-DD" en timezone local pour correspondre à buildLastDays().
+    const toDateString = (d: unknown): string => {
+      if (d instanceof Date) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      return String(d).slice(0, 10);
+    };
+
     const salesByDayMap = new Map(
-      salesByDayRaw.map((item) => [item.date, Number(item.total)]),
+      salesByDayRaw.map((item) => [
+        toDateString(item.date),
+        Number(item.total),
+      ]),
     );
     const purchasesByDayMap = new Map(
-      purchasesByDayRaw.map((item) => [item.date, Number(item.total)]),
+      purchasesByDayRaw.map((item) => [
+        toDateString(item.date),
+        Number(item.total),
+      ]),
     );
     const expensesByDayMap = new Map(
-      expensesByDayRaw.map((item) => [item.date, Number(item.total)]),
+      expensesByDayRaw.map((item) => [
+        toDateString(item.date),
+        Number(item.total),
+      ]),
     );
 
     const dailyTrend: DailyTrendItem[] = this.buildLastDays(7).map((date) => {

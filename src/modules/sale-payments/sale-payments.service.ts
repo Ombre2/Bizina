@@ -70,6 +70,18 @@ export class SalePaymentsService {
     });
   }
 
+  findBySaleId(saleId: string): Promise<SalePayment[]> {
+    return this.salePaymentsRepository.find({
+      where: { sale: { id: saleId } },
+      relations: {
+        paymentMethod: true,
+      },
+      order: {
+        paymentDate: 'DESC',
+      },
+    });
+  }
+
   async findOne(id: string): Promise<SalePayment> {
     const salePayment = await this.salePaymentsRepository.findOne({
       where: { id },
