@@ -104,9 +104,6 @@ export class ProductsService {
       where: { id },
       relations: {
         baseUnit: true,
-        // productUnits: {
-        //   unit: true,
-        // },
         stockMovements: true,
       },
     });
@@ -119,7 +116,12 @@ export class ProductsService {
       );
     }
 
-    return { ...product, productUnits };
+    const stock = (product.stockMovements || []).reduce(
+      (acc, sm) => acc + Number(sm.quantity),
+      0,
+    );
+
+    return { ...product, productUnits, stock: Number(stock).toFixed(3) };
   }
 
   async update(
