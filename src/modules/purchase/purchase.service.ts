@@ -80,7 +80,7 @@ export class PurchaseService {
 
     const [data, total] = await this.purchasesRepository.findAndCount({
       where: where,
-      relations: ['supplier', 'purchaseItems'],
+      relations: ['supplier', 'purchaseItems', 'mission'],
       order: {
         purchaseDate: 'DESC',
       },

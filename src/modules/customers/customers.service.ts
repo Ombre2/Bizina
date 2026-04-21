@@ -22,16 +22,15 @@ export class CustomersService {
     const normalizedName = createCustomerDto.name.trim();
     const normalizedPhone = createCustomerDto.phone?.trim();
 
-    if (normalizedPhone) {
+    if (normalizedName) {
       const duplicate = await this.customersRepository
         .createQueryBuilder('customer')
         .where('LOWER(customer.name) = LOWER(:name)', { name: normalizedName })
-        .andWhere('customer.phone = :phone', { phone: normalizedPhone })
         .getOne();
 
       if (duplicate) {
         throw new ConflictException(
-          'Un client avec le même nom et le même téléphone existe déjà',
+          'Un client avec le même nom existe déjà',
         );
       }
     }
@@ -112,7 +111,7 @@ export class CustomersService {
 
       if (duplicate) {
         throw new ConflictException(
-          'Un client avec le même nom et le même téléphone existe déjà',
+          'Un client avec le même nom existe déjà',
         );
       }
     }

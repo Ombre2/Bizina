@@ -22,16 +22,16 @@ export class SuppliersService {
     const normalizedName = createSupplierDto.name.trim();
     const normalizedPhone = createSupplierDto.phone?.trim();
 
-    if (normalizedPhone) {
+    if (normalizedPhone || normalizedName) {
       const duplicate = await this.suppliersRepository
         .createQueryBuilder('supplier')
         .where('LOWER(supplier.name) = LOWER(:name)', { name: normalizedName })
-        .andWhere('supplier.phone = :phone', { phone: normalizedPhone })
+        // .andWhere('supplier.phone = :phone', { phone: normalizedPhone })
         .getOne();
 
       if (duplicate) {
         throw new ConflictException(
-          'Un fournisseur avec le même nom et le même téléphone existe déjà',
+          'Un fournisseur avec le même nom existe déjà',
         );
       }
     }
@@ -111,7 +111,7 @@ export class SuppliersService {
 
       if (duplicate) {
         throw new ConflictException(
-          'Un fournisseur avec le même nom et le même téléphone existe déjà',
+          'Un fournisseur avec le même nom existe déjà',
         );
       }
     }
