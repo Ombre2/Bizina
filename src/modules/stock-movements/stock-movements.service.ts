@@ -70,7 +70,9 @@ export class StockMovementsService {
       .leftJoinAndSelect('sm.product', 'product')
       .leftJoinAndSelect('product.baseUnit', 'baseUnit')
       .leftJoinAndSelect('sm.sale', 'sale')
+      .leftJoinAndSelect('sale.customer', 'customer')
       .leftJoinAndSelect('sm.purchase', 'purchase')
+      .leftJoinAndSelect('purchase.supplier', 'supplier')
       .leftJoinAndSelect('sm.mission', 'mission');
 
     if (searchQuery) {

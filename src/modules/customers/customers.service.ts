@@ -29,9 +29,7 @@ export class CustomersService {
         .getOne();
 
       if (duplicate) {
-        throw new ConflictException(
-          'Un client avec le même nom existe déjà',
-        );
+        throw new ConflictException('Un client avec le même nom existe déjà');
       }
     }
 
@@ -110,9 +108,7 @@ export class CustomersService {
         .getOne();
 
       if (duplicate) {
-        throw new ConflictException(
-          'Un client avec le même nom existe déjà',
-        );
+        throw new ConflictException('Un client avec le même nom existe déjà');
       }
     }
 

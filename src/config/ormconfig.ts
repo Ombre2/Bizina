@@ -15,9 +15,11 @@ import { StockMovement } from 'src/modules/stock-movements/entities/stock-moveme
 import { Supplier } from 'src/modules/suppliers/entities/supplier.entity';
 import { Unit } from 'src/modules/units/entities/unit.entity';
 import { User } from 'src/modules/users/entities/user.entity';
-dotenv.config();
-
 import { DataSource } from 'typeorm';
+
+dotenv.config({
+  path: `.env.${process.env.NODE_ENV || 'development'}`,
+});
 
 export const AppDataSource = new DataSource({
   type: (process.env.DATABASE_TYPE as 'mysql') ?? 'mysql',

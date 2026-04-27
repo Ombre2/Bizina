@@ -98,6 +98,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const token = (req.cookies as Record<string, string>)?.[REFRESH_COOKIE];
+    console.log(token);
     if (!token) {
       throw new HttpException('Refresh token absent', HttpStatus.UNAUTHORIZED);
     }

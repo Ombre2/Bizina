@@ -41,9 +41,15 @@ import { UnitsModule } from './modules/units/units.module';
 import { User } from './modules/users/entities/user.entity';
 import { UsersModule } from './modules/users/users.module';
 
+const env = process.env.NODE_ENV || 'dev';
+
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [`.env.${env}`, '.env'],
+      load: [configuration],
+    }),
 
     // Rate limiting global: 100 requêtes / 60s par IP
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),

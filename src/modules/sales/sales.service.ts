@@ -176,7 +176,7 @@ export class SalesService {
     }
 
     // 👉 ORDER + PAGINATION
-    qb.orderBy('sale.saleDate', 'DESC')
+    qb.orderBy('sale.saleDate', 'ASC')
       .skip((page - 1) * limit)
       .take(limit);
 

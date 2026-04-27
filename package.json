@@ -9,9 +9,12 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start -b swc",
-    "start:dev": "nest start -b swc -w",
+    
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:dev": "cross-env NODE_ENV=development nest start -b swc -w",
+    "start:preprod": "cross-env NODE_ENV=preprod node dist/main",
+    "start:prod": "cross-env NODE_ENV=production node dist/main",
+
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -19,10 +22,19 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "migration:generate": "npm run typeorm -- migration:generate -d src/config/ormconfig.ts src/migrations/$npm_config_name",
-    "migration:run": "npm run typeorm -- migration:run -d src/config/ormconfig.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/config/ormconfig.ts",
-    "db:seed": "ts-node -r tsconfig-paths/register src/seeds/seed.ts"
+
+    "migration:generate": "cross-env NODE_ENV=development npm run typeorm -- migration:generate -d src/config/ormconfig.ts src/migrations/$npm_config_name",
+    "migration:run:dev": "cross-env NODE_ENV=development npm run typeorm -- migration:run -d src/config/ormconfig.ts",
+    "migration:run:preprod": "cross-env NODE_ENV=preprod npm run typeorm -- migration:run -d src/config/ormconfig.ts",
+    "migration:run:prod": "cross-env NODE_ENV=production npm run typeorm -- migration:run -d src/config/ormconfig.ts",
+   
+    "migration:revert:dev": "cross-env NODE_ENV=development npm run typeorm -- migration:revert -d src/config/ormconfig.ts",
+    "migration:revert:preprod": "cross-env NODE_ENV=preprod npm run typeorm -- migration:revert -d src/config/ormconfig.ts",
+    "migration:revert:prod": "cross-env NODE_ENV=production npm run typeorm -- migration:revert -d src/config/ormconfig.ts",
+    
+    "db:seed:dev": "cross-env NODE_ENV=development ts-node -r tsconfig-paths/register src/seeds/seed.ts",
+    "db:seed:preprod": "cross-env NODE_ENV=preprod ts-node -r tsconfig-paths/register src/seeds/seed.ts",
+    "db:seed:prod": "cross-env NODE_ENV=production ts-node -r tsconfig-paths/register src/seeds/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -40,6 +52,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.4",
     "cookie-parser": "^1.4.7",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "helmet": "^8.1.0",
     "mysql2": "^3.19.1",
