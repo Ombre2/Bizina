@@ -32,6 +32,7 @@ export class ProductsService {
       name: createProductDto.name,
       description: createProductDto.description,
       baseUnit,
+      minimumStock: createProductDto.minimumStock,
     });
 
     const savedProduct = await this.productsRepository.save(product);
@@ -144,6 +145,10 @@ export class ProductsService {
 
     if (updateProductDto.description !== undefined) {
       product.description = updateProductDto.description;
+    }
+
+    if (updateProductDto.minimumStock !== undefined) {
+      product.minimumStock = updateProductDto.minimumStock;
     }
 
     await this.productsRepository.save(product);

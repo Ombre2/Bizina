@@ -4,6 +4,7 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsNotEmpty,
+  IsNumber,
   IsNumberString,
   IsString,
   IsUUID,
@@ -77,6 +78,14 @@ export class CreateProductDto {
     message: "L'identifiant de l'unité de base doit être un UUID valide",
   })
   baseUnitId: string;
+
+  @ApiProperty({
+    description: 'Stock minimum d\'alerte',
+    example: '10',
+  })
+  @IsNotEmpty({ message: 'Le stock minimum est obligatoire' })
+  @IsNumber({}, { message: 'Le stock minimum doit être un nombre valide' })
+  minimumStock: number;
 
   @ApiProperty({
     description: 'Liste des unités associées au produit avec leur conversion',

@@ -162,12 +162,12 @@ export class DashboardService {
         .addSelect('product.name', 'productName')
         .addSelect('COALESCE(SUM(sm.quantity), 0)', 'quantity')
         .addSelect('baseUnit.symbol', 'baseUnitSymbol')
+        .addSelect('product.minimumStock', 'minimumStock') // 👈 utile si tu veux le retourner
         .groupBy('product.id')
         .addGroupBy('product.name')
         .addGroupBy('baseUnit.symbol')
-        .having('COALESCE(SUM(sm.quantity), 0) <= :threshold', {
-          threshold: 10,
-        })
+        .addGroupBy('product.minimumStock') // 👈 OBLIGATOIRE
+        .having('COALESCE(SUM(sm.quantity), 0) <= product.minimumStock')
         .orderBy('quantity', 'ASC')
         .limit(20)
         .getRawMany<{

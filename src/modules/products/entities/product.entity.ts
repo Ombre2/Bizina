@@ -32,6 +32,9 @@ export class Product {
   @OneToMany(() => StockMovement, (stockMovement) => stockMovement.product)
   stockMovements: StockMovement[];
 
+  @Column({ type: 'float', default: 0 })
+  minimumStock: number;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 }
