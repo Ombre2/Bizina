@@ -80,12 +80,6 @@ export class User {
     format: 'date-time',
     example: '2026-03-12T10:00:00.000Z',
   })
-  // @Column({
-  //   type: 'timestamp',
-  //   nullable: true,
-  //   default: null,
-  // })
-  // lastLogin: Date | null;
   @Column({
     type: 'timestamp',
     nullable: true,

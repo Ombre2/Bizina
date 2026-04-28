@@ -16,6 +16,12 @@ import { User, UserRole } from 'src/modules/users/entities/user.entity';
 async function seed() {
   await AppDataSource.initialize();
   console.log('Database connected.');
+  const adminPassword =
+    process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe_Admin_123!';
+  const managerPassword =
+    process.env.SEED_MANAGER_PASSWORD ?? 'ChangeMe_Manager_123!';
+  const cashierPassword =
+    process.env.SEED_CASHIER_PASSWORD ?? 'ChangeMe_Cashier_123!';
 
   // --- Units ---
   const unitRepo = AppDataSource.getRepository(Unit);
@@ -89,21 +95,21 @@ async function seed() {
     {
       username: 'admin',
       email: 'admin@bizina.com',
-      password: await hash('admin123', 10),
+      password: await hash(adminPassword, 10),
       role: UserRole.ADMIN,
       isActive: true,
     },
     {
       username: 'manager',
       email: 'manager@bizina.com',
-      password: await hash('manager123', 10),
+      password: await hash(managerPassword, 10),
       role: UserRole.MANAGER,
       isActive: true,
     },
     {
       username: 'caissier',
       email: 'caissier@bizina.com',
-      password: await hash('caissier123', 10),
+      password: await hash(cashierPassword, 10),
       role: UserRole.CASHIER,
       isActive: true,
     },
@@ -119,6 +125,9 @@ async function seed() {
     }
   }
   console.log(`✔ ${usersCount} users seeded.`);
+  console.log(
+    'Seed users passwords loaded from SEED_*_PASSWORD env vars (or ChangeMe_* defaults).',
+  );
 
   // --- Customers ---
   const customerRepo = AppDataSource.getRepository(Customer);

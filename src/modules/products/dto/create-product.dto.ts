@@ -80,7 +80,7 @@ export class CreateProductDto {
   baseUnitId: string;
 
   @ApiProperty({
-    description: 'Stock minimum d\'alerte',
+    description: "Stock minimum d'alerte",
     example: '10',
   })
   @IsNotEmpty({ message: 'Le stock minimum est obligatoire' })

@@ -21,15 +21,20 @@ export class AuthService {
   ) {}
 
   private async generateTokens(
-    userId: string,
-    username: string,
+    user: Pick<User, 'id' | 'username' | 'role'>,
+    sessionNonce: number,
   ): Promise<{ access_token: string; refresh_token: string }> {
-    const payload = { sub: userId, username };
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+      nonce: sessionNonce,
+    };
 
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(
-        { sub: userId, username, type: 'refresh' },
+        { ...payload, type: 'refresh' },
         {
           secret: this.configService.get<string>('jwt.refreshSecret'),
           expiresIn: (this.configService.get<string>('jwt.refreshExpiresIn') ??
@@ -68,14 +73,19 @@ export class AuthService {
       password: await hash(registerDto.password, 10),
     });
 
-    const tokens = await this.generateTokens(user.id, user.username);
+    const sessionNonce = await this.usersService.bumpSessionNonce(user.id);
+    const tokens = await this.generateTokens(user, sessionNonce);
     return { ...tokens, user };
   }
 
   async signIn(
     username: string,
     pass: string,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  ): Promise<{
+    access_token: string;
+    refresh_token: string;
+    user: Omit<User, 'password'>;
+  }> {
     const user = await this.usersService.findByUsername(username);
     if (!user) {
       throw new UnauthorizedException('Identifiants invalides');
@@ -86,17 +96,27 @@ export class AuthService {
       throw new UnauthorizedException('Identifiants invalides');
     }
 
-    return this.generateTokens(user.id, user.username);
+    const sessionNonce = await this.usersService.bumpSessionNonce(user.id);
+    const tokens = await this.generateTokens(user, sessionNonce);
+    return { ...tokens, user };
   }
 
   async refresh(
     refreshToken: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
-    let payload: { sub: string; username: string; type: string };
+    let payload: {
+      sub: string;
+      username: string;
+      role: User['role'];
+      nonce: number;
+      type: string;
+    };
     try {
       payload = await this.jwtService.verifyAsync<{
         sub: string;
         username: string;
+        role: User['role'];
+        nonce: number;
         type: string;
       }>(refreshToken, {
         secret: this.configService.get<string>('jwt.refreshSecret'),
@@ -114,7 +134,33 @@ export class AuthService {
       throw new UnauthorizedException('Utilisateur introuvable');
     }
 
-    return this.generateTokens(user.id, user.username);
+    const currentNonce = Math.floor((user.lastLogin?.getTime() ?? 0) / 1000);
+    if (payload.nonce !== currentNonce) {
+      throw new UnauthorizedException('Refresh token invalide ou revoque');
+    }
+
+    const nextNonce = await this.usersService.bumpSessionNonce(user.id);
+    return this.generateTokens(user, nextNonce);
+  }
+
+  async revokeSessionFromRefreshToken(refreshToken: string): Promise<void> {
+    let payload: { sub: string; type: string };
+    try {
+      payload = await this.jwtService.verifyAsync<{
+        sub: string;
+        type: string;
+      }>(refreshToken, {
+        secret: this.configService.get<string>('jwt.refreshSecret'),
+      });
+    } catch {
+      return;
+    }
+
+    if (payload.type !== 'refresh') {
+      return;
+    }
+
+    await this.usersService.bumpSessionNonce(payload.sub);
   }
 
   async getProfile(userId: string): Promise<Omit<User, 'password'>> {

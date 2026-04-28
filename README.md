@@ -549,3 +549,16 @@ npm run test:e2e
 # Couverture
 npm run test:cov
 ```
+
+---
+
+## Security Notes
+
+- Endpoints publics explicitement autorisés:
+  - `POST /auth/register`
+  - `POST /auth/login`
+  - `POST /auth/refresh`
+  - `POST /auth/logout`
+- Les endpoints de gestion des utilisateurs (`/users`) sont réservés aux comptes admin.
+- Ne jamais logger de secrets/tokens (`JWT`, `refresh_token`, mots de passe, cookies).
+- Les variables `JWT_SECRET` et `JWT_REFRESH_SECRET` doivent être aléatoires, longues, et différentes.

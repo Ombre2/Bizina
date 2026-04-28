@@ -48,19 +48,11 @@ export class UsersService {
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    const user = await this.usersRepository.findOneBy({ username });
-    if (!user) {
-      throw new NotFoundException(`User with username ${username} not found`);
-    }
-    return user;
+    return this.usersRepository.findOneBy({ username });
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.usersRepository.findOneBy({ email });
-    if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
-    }
-    return user;
+    return this.usersRepository.findOneBy({ email });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -71,6 +63,15 @@ export class UsersService {
     }
 
     return this.usersRepository.save(user);
+  }
+
+  async bumpSessionNonce(userId: string): Promise<number> {
+    const user = await this.findOne(userId);
+    // Use second precision to avoid DB timestamp precision mismatch.
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    user.lastLogin = new Date(nowSeconds * 1000);
+    const saved = await this.usersRepository.save(user);
+    return Math.floor((saved.lastLogin?.getTime() ?? 0) / 1000);
   }
 
   async remove(id: string): Promise<void> {

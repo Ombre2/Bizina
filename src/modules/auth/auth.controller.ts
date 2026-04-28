@@ -98,7 +98,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const token = (req.cookies as Record<string, string>)?.[REFRESH_COOKIE];
-    console.log(token);
     if (!token) {
       throw new HttpException('Refresh token absent', HttpStatus.UNAUTHORIZED);
     }
@@ -112,7 +111,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('logout')
   @ApiOperation({ summary: 'Déconnexion' })
-  logout(@Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const token = (req.cookies as Record<string, string>)?.[REFRESH_COOKIE];
+    if (token) {
+      await this.authService.revokeSessionFromRefreshToken(token);
+    }
     res.clearCookie(REFRESH_COOKIE, { path: '/auth/refresh' });
     return ResponseUtil.success(null, 'Déconnecté avec succès');
   }
